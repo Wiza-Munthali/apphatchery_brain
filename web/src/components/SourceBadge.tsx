@@ -8,22 +8,24 @@ export const SOURCE_META: Record<
   github: {
     label: 'GitHub',
     icon: GitBranch,
-    classes: 'bg-slate-100 text-slate-700 border-slate-300',
+    classes: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-600',
   },
   zulip: {
     label: 'Zulip',
     icon: MessageCircle,
-    classes: 'bg-blue-50 text-blue-700 border-blue-200',
+    classes: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
   },
   figma: {
     label: 'Figma',
     icon: Frame,
-    classes: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200',
+    classes:
+      'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950 dark:text-fuchsia-300 dark:border-fuchsia-800',
   },
   notion: {
     label: 'Notion',
     icon: FileText,
-    classes: 'bg-neutral-100 text-neutral-700 border-neutral-300',
+    classes:
+      'bg-neutral-100 text-neutral-700 border-neutral-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-600',
   },
 }
 

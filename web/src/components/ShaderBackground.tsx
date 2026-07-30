@@ -7,18 +7,25 @@ void main() {
 }
 `
 
-// Soft, light-theme gradient: near-white base with slow-drifting brand
-// navy/blue and orange blobs. Motion is deliberately small and slow so it
-// reads as ambient, not distracting.
+// Soft gradient with slow-drifting brand navy/orange blobs, ambient rather
+// than distracting. Follows the OS/browser color scheme (uDark uniform) so
+// it stays a backdrop instead of washing out theme-aware text sitting on it —
+// near-white base in light mode, near-black in dark mode (matching the
+// design system's own --color-background-body dark value, #1b1b1b).
 const FRAGMENT_SRC = `
 precision highp float;
 uniform vec2 uResolution;
 uniform float uTime;
+uniform float uDark;
 
-// Brand palette
-const vec3 navy = vec3(0.106, 0.298, 0.510);   // #1b4c82
-const vec3 orange = vec3(0.961, 0.573, 0.118); // #f5921e
-const vec3 base = vec3(0.976, 0.980, 0.992);   // near-white
+// Brand palette — dark-mode variants are lightened/desaturated slightly so
+// they still read against a near-black base instead of disappearing into it.
+const vec3 navyLight = vec3(0.106, 0.298, 0.510);   // #1b4c82
+const vec3 navyDark = vec3(0.290, 0.470, 0.700);
+const vec3 orangeLight = vec3(0.961, 0.573, 0.118); // #f5921e
+const vec3 orangeDark = vec3(0.980, 0.650, 0.280);
+const vec3 baseLight = vec3(0.976, 0.980, 0.992);   // near-white
+const vec3 baseDark = vec3(0.106, 0.106, 0.106);    // #1b1b1b
 
 float blob(vec2 p, vec2 center, float radius) {
   return smoothstep(radius, 0.0, length(p - center));
@@ -31,6 +38,12 @@ void main() {
 
   float t = uTime * 0.05;
 
+  vec3 navy = mix(navyLight, navyDark, uDark);
+  vec3 orange = mix(orangeLight, orangeDark, uDark);
+  vec3 base = mix(baseLight, baseDark, uDark);
+  // Dark backgrounds need slightly stronger blobs to read at the same visual weight.
+  float strength = mix(1.0, 1.3, uDark);
+
   // Five soft blobs loosely ringed around the center, each drifting slowly
   // on its own phase so the color spots feel alive without being busy.
   vec2 c1 = vec2(-1.0,  0.65) + 0.16 * vec2(sin(t * 1.00),        cos(t * 0.80));
@@ -39,11 +52,11 @@ void main() {
   vec2 c4 = vec2( 1.00,-0.65) + 0.16 * vec2(cos(t * 0.85 + 3.0),  sin(t * 0.75 + 2.5));
   vec2 c5 = vec2( 0.0,  1.10) + 0.16 * vec2(sin(t * 0.60 + 4.0),  cos(t * 0.65 + 3.5));
 
-  float b1 = blob(p, c1, 0.85) * 0.16;
-  float b2 = blob(p, c2, 0.80) * 0.14;
-  float b3 = blob(p, c3, 0.90) * 0.15;
-  float b4 = blob(p, c4, 0.78) * 0.13;
-  float b5 = blob(p, c5, 0.75) * 0.12;
+  float b1 = blob(p, c1, 0.85) * 0.16 * strength;
+  float b2 = blob(p, c2, 0.80) * 0.14 * strength;
+  float b3 = blob(p, c3, 0.90) * 0.15 * strength;
+  float b4 = blob(p, c4, 0.78) * 0.13 * strength;
+  float b5 = blob(p, c5, 0.75) * 0.12 * strength;
 
   vec3 color = base;
   color = mix(color, navy, b1);
@@ -104,6 +117,9 @@ export function ShaderBackground({ className = '' }: { className?: string }) {
 
     const uResolution = gl.getUniformLocation(program, 'uResolution')
     const uTime = gl.getUniformLocation(program, 'uTime')
+    const uDark = gl.getUniformLocation(program, 'uDark')
+
+    const darkMode = window.matchMedia('(prefers-color-scheme: dark)')
 
     let animationFrame: number
     let startTime: number | null = null
@@ -124,6 +140,7 @@ export function ShaderBackground({ className = '' }: { className?: string }) {
       resize()
       gl.uniform2f(uResolution, canvas.width, canvas.height)
       gl.uniform1f(uTime, (time - startTime) / 1000)
+      gl.uniform1f(uDark, darkMode.matches ? 1.0 : 0.0)
       gl.drawArrays(gl.TRIANGLES, 0, 6)
       animationFrame = requestAnimationFrame(render)
     }

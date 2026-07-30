@@ -9,8 +9,8 @@ export function TopicDetail() {
 
   if (!topic) {
     return (
-      <div className="mx-auto max-w-5xl px-6 py-10 text-sm text-slate-500">
-        Topic not found. <Link to={`/p/${projectId}/memory?tab=topics`} className="text-brand-navy hover:underline">Go back</Link>
+      <div className="mx-auto max-w-5xl px-6 py-10 text-sm text-slate-500 dark:text-neutral-400">
+        Topic not found. <Link to={`/p/${projectId}/memory?tab=topics`} className="text-brand-navy hover:underline dark:text-blue-400">Go back</Link>
       </div>
     )
   }
@@ -22,17 +22,17 @@ export function TopicDetail() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
-      <Link to={`/p/${projectId}/memory?tab=topics`} className="mb-5 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600">
+      <Link to={`/p/${projectId}/memory?tab=topics`} className="mb-5 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300">
         <ArrowLeft size={13} /> All topics
       </Link>
 
-      <h1 className="mb-2 text-xl font-semibold text-slate-900">{topic.title}</h1>
-      <p className="mb-6 text-sm text-slate-500">{topic.description}</p>
+      <h1 className="mb-2 text-xl font-semibold text-slate-900 dark:text-neutral-100">{topic.title}</h1>
+      <p className="mb-6 text-sm text-slate-500 dark:text-neutral-400">{topic.description}</p>
 
-      <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+      <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-neutral-500">
         Timeline ({topicItems.length} items)
       </div>
-      <div className="relative flex flex-col gap-3 border-l border-slate-200 pl-5">
+      <div className="relative flex flex-col gap-3 border-l border-slate-200 pl-5 dark:border-neutral-800">
         {topicItems.map((item) => (
           <div key={item!.id} className="relative">
             <span className="absolute -left-[26px] top-3 h-2 w-2 rounded-full bg-brand-orange" />

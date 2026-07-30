@@ -3,23 +3,25 @@ import type { ItemTag } from '../types'
 export const TAG_META: Record<ItemTag, { label: string; classes: string }> = {
   delivery: {
     label: 'Delivery',
-    classes: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    classes:
+      'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
   },
   feature: {
     label: 'New Feature',
-    classes: 'bg-violet-50 text-violet-700 border-violet-200',
+    classes:
+      'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950 dark:text-violet-300 dark:border-violet-800',
   },
   issue: {
     label: 'Issue',
-    classes: 'bg-red-50 text-red-700 border-red-200',
+    classes: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800',
   },
   milestone: {
     label: 'Milestone',
-    classes: 'bg-amber-50 text-amber-700 border-amber-200',
+    classes: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
   },
   update: {
     label: 'Update',
-    classes: 'bg-slate-100 text-slate-600 border-slate-300',
+    classes: 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-600',
   },
 }
 

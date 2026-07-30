@@ -37,7 +37,7 @@ export function ProjectsPage() {
               <Link
                 key={project.id}
                 to={`/p/${project.id}`}
-                className="group flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition hover:border-slate-300 hover:shadow-md"
+                className="group flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition hover:border-slate-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/90 dark:hover:border-neutral-600"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -46,16 +46,16 @@ export function ProjectsPage() {
                     {project.initial}
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-base font-semibold text-slate-900">{project.name}</h2>
-                    <p className="text-xs text-slate-400">updated {relativeTime(latest)}</p>
+                    <h2 className="text-base font-semibold text-slate-900 dark:text-neutral-100">{project.name}</h2>
+                    <p className="text-xs text-slate-400 dark:text-neutral-500">updated {relativeTime(latest)}</p>
                   </div>
                   <ArrowRight
                     size={16}
-                    className="ml-auto shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500"
+                    className="ml-auto shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-neutral-600 dark:group-hover:text-neutral-400"
                   />
                 </div>
 
-                <p className="text-[13px] leading-snug text-slate-500">{project.description}</p>
+                <p className="text-[13px] leading-snug text-slate-500 dark:text-neutral-400">{project.description}</p>
               </Link>
             )
           })}

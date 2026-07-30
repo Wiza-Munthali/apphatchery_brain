@@ -146,15 +146,17 @@ export function MemoryPage() {
         <Network size={17} className="text-brand-orange" />
         <h1 className="text-lg font-semibold">Memory</h1>
       </div>
-      <p className="mb-5 text-sm text-slate-500">
+      <p className="mb-5 text-sm text-slate-500 dark:text-neutral-400">
         A synthesized overview of the project's major milestones — how items connect, cluster into topics, and unfold over time.
       </p>
 
-      <div className="mb-5 flex items-center gap-1 border-b border-slate-200">
+      <div className="mb-5 flex items-center gap-1 border-b border-slate-200 dark:border-neutral-800">
         <button
           onClick={() => setParams({ tab: 'timeline' })}
           className={`border-b-2 px-3 py-2 text-sm font-medium transition ${
-            tab === 'timeline' ? 'border-brand-orange text-brand-navy' : 'border-transparent text-slate-400 hover:text-slate-600'
+            tab === 'timeline'
+              ? 'border-brand-orange text-brand-navy dark:text-blue-300'
+              : 'border-transparent text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300'
           }`}
         >
           Timeline
@@ -162,7 +164,9 @@ export function MemoryPage() {
         <button
           onClick={() => setParams({ tab: 'topics' })}
           className={`border-b-2 px-3 py-2 text-sm font-medium transition ${
-            tab === 'topics' ? 'border-brand-orange text-brand-navy' : 'border-transparent text-slate-400 hover:text-slate-600'
+            tab === 'topics'
+              ? 'border-brand-orange text-brand-navy dark:text-blue-300'
+              : 'border-transparent text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300'
           }`}
         >
           Topics
@@ -178,7 +182,7 @@ export function MemoryPage() {
               key={t}
               onClick={() => toggleTag(t)}
               className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[11px] font-medium transition ${
-                on ? meta.classes : 'border-slate-200 text-slate-400 opacity-60'
+                on ? meta.classes : 'border-slate-200 text-slate-400 opacity-60 dark:border-neutral-700 dark:text-neutral-500'
               }`}
             >
               {meta.label}
@@ -207,16 +211,16 @@ export function MemoryPage() {
                 <button
                   key={item.id}
                   onClick={() => navigate(`/p/${projectId}/item/${item.id}`)}
-                  className="block w-full rounded-lg border border-slate-200 bg-white p-3.5 text-left shadow-sm transition hover:border-slate-300 hover:shadow-md"
+                  className="block w-full rounded-lg border border-slate-200 bg-white p-3.5 text-left shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-600"
                 >
                   <div className="mb-1.5 flex items-center gap-2">
                     <TagBadge tag={item.tag} />
-                    <span className="text-[11px] uppercase tracking-wide text-slate-400">{item.type}</span>
-                    <span className="ml-auto shrink-0 text-[11px] text-slate-400">{relativeTime(item.updatedAt)}</span>
+                    <span className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-neutral-500">{item.type}</span>
+                    <span className="ml-auto shrink-0 text-[11px] text-slate-400 dark:text-neutral-500">{relativeTime(item.updatedAt)}</span>
                   </div>
-                  <h3 className="mb-1 text-sm font-medium text-slate-800">{item.title}</h3>
-                  <p className="line-clamp-2 text-[13px] leading-snug text-slate-500">{item.snippet}</p>
-                  <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <h3 className="mb-1 text-sm font-medium text-slate-800 dark:text-neutral-100">{item.title}</h3>
+                  <p className="line-clamp-2 text-[13px] leading-snug text-slate-500 dark:text-neutral-400">{item.snippet}</p>
+                  <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-neutral-500">
                     <span>{item.author}</span>
                     <span>·</span>
                     <span>{item.space}</span>
@@ -224,7 +228,7 @@ export function MemoryPage() {
                 </button>
               ))}
               {feed.length === 0 && (
-                <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
+                <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500">
                   {q ? 'No items match your search.' : 'No tags selected.'}
                 </p>
               )}
@@ -237,17 +241,17 @@ export function MemoryPage() {
                 <Link
                   key={topic.id}
                   to={`/p/${projectId}/topics/${topic.id}`}
-                  className="flex flex-col gap-2.5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md"
+                  className="flex flex-col gap-2.5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-600"
                 >
                   <div className="flex items-center gap-2">
                     <BookOpen size={15} className="text-brand-orange" />
-                    <h2 className="text-sm font-semibold text-slate-800">{topic.title}</h2>
+                    <h2 className="text-sm font-semibold text-slate-800 dark:text-neutral-100">{topic.title}</h2>
                   </div>
-                  <p className="text-[13px] leading-snug text-slate-500">{topic.description}</p>
+                  <p className="text-[13px] leading-snug text-slate-500 dark:text-neutral-400">{topic.description}</p>
                 </Link>
               ))}
               {topics.length === 0 && (
-                <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
+                <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500">
                   {q ? 'No topics match your search.' : 'No topics detected yet for this project.'}
                 </p>
               )}
@@ -257,26 +261,26 @@ export function MemoryPage() {
 
         <div
           ref={graphAreaRef}
-          className="relative w-[380px] shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white"
+          className="relative w-[380px] shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
         >
-          <div className="absolute bottom-3 right-3 z-10 flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
+          <div className="absolute bottom-3 right-3 z-10 flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
             <button
               onClick={zoomIn}
-              className="flex h-7 w-7 items-center justify-center text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+              className="flex h-7 w-7 items-center justify-center text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
               aria-label="Zoom in"
             >
               <ZoomIn size={14} />
             </button>
             <button
               onClick={zoomOut}
-              className="flex h-7 w-7 items-center justify-center border-t border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+              className="flex h-7 w-7 items-center justify-center border-t border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
               aria-label="Zoom out"
             >
               <ZoomOut size={14} />
             </button>
             <button
               onClick={resetView}
-              className="flex h-7 w-7 items-center justify-center border-t border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+              className="flex h-7 w-7 items-center justify-center border-t border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
               aria-label="Reset view"
             >
               <Maximize2 size={13} />
@@ -359,7 +363,7 @@ export function MemoryPage() {
                         strokeWidth={isSelected ? 2 : 1}
                         style={{ transition: 'r 150ms' }}
                       />
-                      <text x={n.x} y={n.y - 14} textAnchor="middle" fontSize={11} fontWeight={600} fill="#1b4c82">
+                      <text x={n.x} y={n.y - 14} textAnchor="middle" fontSize={11} fontWeight={600} fill="#3b82c4">
                         {n.label}
                       </text>
                     </g>
@@ -394,17 +398,17 @@ export function MemoryPage() {
 
           {hoveredItem && hovered && !selected && (
             <div
-              className="pointer-events-none absolute z-20 w-56 -translate-x-1/2 -translate-y-full rounded-lg border border-slate-200 bg-white p-3 shadow-lg"
+              className="pointer-events-none absolute z-20 w-56 -translate-x-1/2 -translate-y-full rounded-lg border border-slate-200 bg-white p-3 shadow-lg dark:border-neutral-700 dark:bg-neutral-800"
               style={{ left: hovered.x, top: hovered.y - 12 }}
             >
               <TagBadge tag={hoveredItem.tag} />
-              <p className="mt-1.5 text-[13px] font-medium leading-snug text-slate-800">{hoveredItem.title}</p>
+              <p className="mt-1.5 text-[13px] font-medium leading-snug text-slate-800 dark:text-neutral-100">{hoveredItem.title}</p>
               {hoveredRelated.length > 0 && (
-                <div className="mt-2 border-t border-slate-100 pt-2">
-                  <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-slate-400">Related</p>
+                <div className="mt-2 border-t border-slate-100 pt-2 dark:border-neutral-700">
+                  <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-slate-400 dark:text-neutral-500">Related</p>
                   <ul className="flex flex-col gap-0.5">
                     {hoveredRelated.map((r) => (
-                      <li key={r!.id} className="truncate text-[11px] text-slate-500">
+                      <li key={r!.id} className="truncate text-[11px] text-slate-500 dark:text-neutral-400">
                         {r!.title}
                       </li>
                     ))}
@@ -417,7 +421,7 @@ export function MemoryPage() {
           {selected && (
             <button
               onClick={() => setSelected(null)}
-              className="absolute left-3 bottom-3 z-10 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-500 shadow-sm transition hover:text-slate-700"
+              className="absolute left-3 bottom-3 z-10 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-500 shadow-sm transition hover:text-slate-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-100"
             >
               Clear selection
             </button>

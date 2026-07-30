@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, useEffect } from 'react'
 import { useOutletContext, useParams } from 'react-router-dom'
-import { Sparkles, Code2, Palette, Layers } from 'lucide-react'
+import { Sparkles, Code2, Palette, Layers, Search } from 'lucide-react'
 import { Button } from '@astryxdesign/core/Button'
 import { Icon } from '@astryxdesign/core/Icon'
 import { Heading } from '@astryxdesign/core/Heading'
@@ -15,8 +15,14 @@ import { uid } from '../lib/id'
 import { ChatMessageBubble, NO_ANSWER_SENTINEL } from '../components/ChatMessageBubble'
 import { ShaderBackground } from '../components/ShaderBackground'
 import { SOURCE_META } from '../components/SourceBadge'
+import { askGateway, searchGateway, GatewayAuthError } from '../lib/gatewayClient'
 import type { ChatHistoryContext } from '../components/Layout'
-import type { ChatMessage, Conversation, Persona, SourceId } from '../types'
+import type { ChatMessage, ChatMode, Conversation, Persona, SourceId } from '../types'
+
+// Only Fabla has real synced data behind the gateway; other projects keep
+// running on the local mock engine/data.
+const GATEWAY_PROJECT_ID = 'fabla'
+const GATEWAY_PROJECT_NAME = 'Fabla'
 
 const MODEL_GROUPS = [
   { title: 'Claude', models: ['Claude Opus 5', 'Claude Sonnet 5', 'Claude Haiku 4.5'] },
@@ -33,11 +39,11 @@ const SOURCE_OPTIONS = SOURCES.map((s) => ({
 
 const SUGGESTIONS: Record<string, string[]> = {
   fabla: [
-    'Why did we choose Stripe over Braintree?',
-    "What's the status of the checkout redesign?",
-    'Who decided to add Apple Pay support?',
-    'What caused the cart 500 errors?',
-    'What changed in the button design system?',
+    "What's the difference between a Daily Diary and an EMA study?",
+    'How do researchers define a study protocol without shipping a new app release?',
+    'What response types can a scheduled question collect — audio, video, text, or survey?',
+    'How are EMA prompts scheduled throughout the day?',
+    'How are incentive structures defined in a protocol?',
   ],
   typeu: [
     'What changed in the onboarding redesign?',
@@ -53,8 +59,12 @@ export function AskPage() {
   const [input, setInput] = useState('')
   const [model, setModel] = useState(DEFAULT_MODEL)
   const [activeSources, setActiveSources] = useState<string[]>(SOURCES)
+  const [gatewayMode, setGatewayMode] = useState<ChatMode>('ask')
+  const [isSending, setIsSending] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  const isGatewayProject = projectId === GATEWAY_PROJECT_ID
 
   const project = getProject(projectId)
   const projectItems = useMemo(() => itemsForProject(projectId), [projectId])
@@ -79,6 +89,13 @@ export function AskPage() {
     />
   )
 
+  const modeToggle = (
+    <SegmentedControl label="Mode" value={gatewayMode} onChange={(v) => setGatewayMode(v as ChatMode)} size="sm">
+      <SegmentedControlItem value="ask" label="Ask" icon={<Icon icon={Sparkles} size="sm" />} />
+      <SegmentedControlItem value="search" label="Search" icon={<Icon icon={Search} size="sm" />} />
+    </SegmentedControl>
+  )
+
   const activeConversation = conversations.find((c) => c.id === activeId)
   const messages = activeConversation?.messages ?? []
 
@@ -86,10 +103,7 @@ export function AskPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages.length])
 
-  const send = (text: string) => {
-    const trimmed = text.trim()
-    if (!trimmed || !projectId) return
-
+  const sendMock = (trimmed: string) => {
     const now = new Date().toISOString()
     const userMsg: ChatMessage = { id: uid(), role: 'user', mode: 'ask', text: trimmed, createdAt: now }
 
@@ -136,6 +150,89 @@ export function AskPage() {
     persist(next)
   }
 
+  const sendToGateway = async (trimmed: string) => {
+    const now = new Date().toISOString()
+    const userMsg: ChatMessage = { id: uid(), role: 'user', mode: gatewayMode, text: trimmed, createdAt: now }
+    const pendingId = uid()
+    const pendingMsg: ChatMessage = {
+      id: pendingId,
+      role: 'assistant',
+      mode: gatewayMode,
+      text: gatewayMode === 'ask' ? 'Asking Apphatchery Brain…' : 'Searching connected sources…',
+      pending: true,
+      createdAt: new Date().toISOString(),
+    }
+
+    const existing = conversations.find((c) => c.id === activeId)
+    const base: Conversation = existing ?? {
+      id: activeId,
+      projectId,
+      title: trimmed.slice(0, 60),
+      createdAt: now,
+      updatedAt: now,
+      messages: [],
+    }
+    const withPending: Conversation = {
+      ...base,
+      messages: [...base.messages, userMsg, pendingMsg],
+      updatedAt: pendingMsg.createdAt,
+    }
+    const afterPending = existing
+      ? conversations.map((c) => (c.id === existing.id ? withPending : c))
+      : [withPending, ...conversations]
+
+    setIsSending(true)
+    persist(afterPending)
+
+    const settle = (patch: Partial<ChatMessage>, conversationPatch?: Partial<Conversation>) => {
+      const finalMsg: ChatMessage = {
+        ...pendingMsg,
+        pending: false,
+        createdAt: new Date().toISOString(),
+        ...patch,
+      }
+      const finalConversation: Conversation = {
+        ...withPending,
+        ...conversationPatch,
+        messages: withPending.messages.map((m) => (m.id === pendingId ? finalMsg : m)),
+        updatedAt: finalMsg.createdAt,
+      }
+      persist(afterPending.map((c) => (c.id === activeId ? finalConversation : c)))
+    }
+
+    try {
+      if (gatewayMode === 'ask') {
+        const res = await askGateway({
+          question: trimmed,
+          session_id: base.gatewaySessionId ?? null,
+          project: GATEWAY_PROJECT_NAME,
+        })
+        settle({ text: res.answer, gatewaySources: res.sources }, { gatewaySessionId: res.session_id })
+      } else {
+        const res = await searchGateway(trimmed)
+        const count = res.results.length
+        settle({ text: `Found ${count} result${count === 1 ? '' : 's'} for "${trimmed}"`, gatewayResults: res.results })
+      }
+    } catch (err) {
+      if (err instanceof GatewayAuthError) return // already redirecting to /auth/login
+      const message = err instanceof Error ? err.message : 'Unexpected error contacting the gateway.'
+      settle({ text: '', error: message })
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const send = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed || !projectId || isSending) return
+
+    if (isGatewayProject) {
+      void sendToGateway(trimmed)
+    } else {
+      sendMock(trimmed)
+    }
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
@@ -155,22 +252,27 @@ export function AskPage() {
                 value={input}
                 onChange={setInput}
                 onSubmit={send}
+                isDisabled={isGatewayProject && isSending}
                 placeholder="How can I help you today?"
                 density="spacious"
                 input={<ChatComposerInput style={{ minHeight: '96px' }} />}
                 footerActions={
-                  <HStack gap={2} vAlign="center">
-                    <SegmentedControl
-                      label="Response style"
-                      value={persona}
-                      onChange={(v) => setPersona(v as Persona)}
-                      size="sm"
-                    >
-                      <SegmentedControlItem value="developer" label="Developer" icon={<Icon icon={Code2} size="sm" />} />
-                      <SegmentedControlItem value="designer" label="Designer" icon={<Icon icon={Palette} size="sm" />} />
-                    </SegmentedControl>
-                    {sourceFilter}
-                  </HStack>
+                  isGatewayProject ? (
+                    modeToggle
+                  ) : (
+                    <HStack gap={2} vAlign="center">
+                      <SegmentedControl
+                        label="Response style"
+                        value={persona}
+                        onChange={(v) => setPersona(v as Persona)}
+                        size="sm"
+                      >
+                        <SegmentedControlItem value="developer" label="Developer" icon={<Icon icon={Code2} size="sm" />} />
+                        <SegmentedControlItem value="designer" label="Designer" icon={<Icon icon={Palette} size="sm" />} />
+                      </SegmentedControl>
+                      {sourceFilter}
+                    </HStack>
+                  )
                 }
                 sendActions={
                   <DropdownMenu
@@ -217,10 +319,13 @@ export function AskPage() {
               value={input}
               onChange={setInput}
               onSubmit={send}
-              placeholder='Ask a question, e.g. "why did we pick Stripe?"'
+              isDisabled={isGatewayProject && isSending}
+              placeholder={
+                isGatewayProject ? 'Ask a follow-up, e.g. "why did we pick Stripe?"' : 'Ask a question, e.g. "why did we pick Stripe?"'
+              }
               density="balanced"
               elevation="none"
-              footerActions={sourceFilter}
+              footerActions={isGatewayProject ? modeToggle : sourceFilter}
             />
           </div>
         </div>

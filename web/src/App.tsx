@@ -7,8 +7,13 @@ import { TopicDetail } from './pages/Topics'
 import { SourcesAdmin } from './pages/SourcesAdmin'
 import { MemoryPage } from './pages/MemoryPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { LoginScreen } from './pages/LoginScreen'
+import { AuthProvider, useAuth } from './context/AuthContext'
 
-function App() {
+function AuthenticatedApp() {
+  const { isAuthenticated } = useAuth()
+  if (!isAuthenticated) return <LoginScreen />
+
   return (
     <HashRouter>
       <Routes>
@@ -23,6 +28,14 @@ function App() {
         </Route>
       </Routes>
     </HashRouter>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AuthenticatedApp />
+    </AuthProvider>
   )
 }
 

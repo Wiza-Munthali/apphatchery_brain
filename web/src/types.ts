@@ -50,6 +50,19 @@ export interface SourceConnector {
   error?: string
 }
 
+export type GatewayResourceType = 'code' | 'zulip' | 'github' | 'qa' | 'doc'
+
+export interface GatewayResource {
+  type: GatewayResourceType
+  path: string
+  title: string
+  url: string | null
+}
+
+export interface GatewaySearchResult extends GatewayResource {
+  reason: string
+}
+
 export type ChatMode = 'ask' | 'search'
 
 export type Persona = 'developer' | 'designer'
@@ -63,6 +76,12 @@ export interface ChatMessage {
   searchResultIds?: string[]
   thinking?: string[]
   createdAt: string
+  // Present on assistant messages answered by the real Brain gateway (Fabla only),
+  // as opposed to the local mock engine (citationIds/searchResultIds above).
+  gatewaySources?: GatewayResource[]
+  gatewayResults?: GatewaySearchResult[]
+  pending?: boolean
+  error?: string
 }
 
 export interface Conversation {
@@ -72,6 +91,8 @@ export interface Conversation {
   createdAt: string
   updatedAt: string
   messages: ChatMessage[]
+  // Gateway /ask session id, so follow-up questions keep conversation context.
+  gatewaySessionId?: string
 }
 
 export type AppStatus = 'operational' | 'degraded' | 'outage'

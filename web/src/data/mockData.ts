@@ -16,7 +16,8 @@ export const projects: Project[] = [
   {
     id: 'fabla',
     name: 'Fabla',
-    description: 'Storefront & checkout — cart, payments, and the design system behind them.',
+    description:
+      'Flutter research diary app (iOS + Android) — daily diary & EMA studies driven by researcher-configured protocols.',
     color: 'from-brand-orange to-brand-orange-dark',
     initial: 'F',
   },

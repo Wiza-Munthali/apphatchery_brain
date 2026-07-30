@@ -41,6 +41,15 @@ body {
   background: #b9c1cd;
 }
 
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: #404040;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #525252;
+  }
+}
+
 @keyframes ask-fade-in {
   from {
     opacity: 0;
