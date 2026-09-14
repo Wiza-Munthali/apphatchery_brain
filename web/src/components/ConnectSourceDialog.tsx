@@ -7,7 +7,7 @@ import { Card } from '@astryxdesign/core/Card'
 import { CheckboxList, CheckboxListItem } from '@astryxdesign/core/CheckboxList'
 import { Divider } from '@astryxdesign/core/Divider'
 import { Icon } from '@astryxdesign/core/Icon'
-import { HStack, VStack } from '@astryxdesign/core/Layout'
+import { HStack, Layout, LayoutContent, VStack } from '@astryxdesign/core/Layout'
 import { Selector } from '@astryxdesign/core/Selector'
 import { Spinner } from '@astryxdesign/core/Spinner'
 import { Text } from '@astryxdesign/core/Text'
@@ -536,36 +536,43 @@ export function ConnectSourceDialog({ isOpen, onOpenChange, onDone, ...flow }: D
   const close = () => onOpenChange(false)
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} purpose="form" width={560} padding={0}>
-      <VStack>
-        <DialogHeader
-          title={
-            flow.mode === 'edit-scope'
-              ? `Edit ${flow.provider.name} scope`
-              : `Connect ${flow.provider.name}`
-          }
-          subtitle={
-            flow.mode === 'edit-scope'
-              ? 'Change what this connection indexes.'
-              : 'Review what you’re granting, then pick what gets indexed.'
-          }
-          onOpenChange={onOpenChange}
-          hasDivider
-        />
-        <div className="max-h-[65vh] overflow-y-auto px-5 py-4">
-          {/* Remounted per provider so switching sources never carries state
-              (least of all a half-typed credential) into the next flow. */}
-          <ConnectSourceFlow
-            key={`${flow.provider.id}:${flow.mode ?? 'connect'}`}
-            {...flow}
-            onDone={() => {
-              onDone?.()
-              close()
-            }}
-            onCancel={close}
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} purpose="form" width={560}>
+      {/* DialogHeader belongs in Layout's header slot: it positions its title
+          and close button with negative margins that need the slot's padding
+          to sit in, and clip against the dialog edge without it. */}
+      <Layout
+        header={
+          <DialogHeader
+            title={
+              flow.mode === 'edit-scope'
+                ? `Edit ${flow.provider.name} scope`
+                : `Connect ${flow.provider.name}`
+            }
+            subtitle={
+              flow.mode === 'edit-scope'
+                ? 'Change what this connection indexes.'
+                : 'Review what you’re granting, then pick what gets indexed.'
+            }
+            onOpenChange={onOpenChange}
+            hasDivider
           />
-        </div>
-      </VStack>
+        }
+        content={
+          <LayoutContent>
+            {/* Remounted per provider so switching sources never carries state
+                (least of all a half-typed credential) into the next flow. */}
+            <ConnectSourceFlow
+              key={`${flow.provider.id}:${flow.mode ?? 'connect'}`}
+              {...flow}
+              onDone={() => {
+                onDone?.()
+                close()
+              }}
+              onCancel={close}
+            />
+          </LayoutContent>
+        }
+      />
     </Dialog>
   )
 }

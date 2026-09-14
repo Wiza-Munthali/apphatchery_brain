@@ -15,6 +15,7 @@ import { canAdminister, memberCanAccessProject } from '../lib/access'
 import { useOrg } from '../context/OrgContext'
 import { ShaderBackground } from '../components/ShaderBackground'
 import { OrgMenu } from '../components/OrgMenu'
+import { EntityAvatar } from '../components/EntityAvatar'
 import { NewProjectDialog } from '../components/NewProjectDialog'
 
 const DOT_CLASSES: Record<string, string> = {
@@ -66,11 +67,15 @@ export function ProjectsPage() {
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 pb-20">
         <div className="mb-12 flex flex-col items-center gap-4 text-center">
-          <div
-            className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${org.color} text-xl font-bold text-white shadow-lg shadow-brand-navy/10`}
-          >
-            {org.initial}
-          </div>
+          <EntityAvatar
+            imageUrl={org.avatarUrl}
+            initial={org.initial}
+            color={org.color}
+            size={56}
+            radius="2xl"
+            alt={org.name}
+            className="shadow-lg shadow-brand-navy/10"
+          />
           <HStack gap={2} vAlign="center">
             <Icon icon={Sparkles} size="md" color="accent" />
             <Heading level={1} type="display-2">
@@ -126,11 +131,12 @@ export function ProjectsPage() {
                 className="group flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition hover:border-slate-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/90 dark:hover:border-neutral-600"
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${project.color} text-base font-bold text-white`}
-                  >
-                    {project.initial}
-                  </div>
+                  <EntityAvatar
+                    imageUrl={project.avatarUrl}
+                    initial={project.initial}
+                    color={project.color}
+                    size={40}
+                  />
                   <div className="min-w-0">
                     <h2 className="text-base font-semibold text-slate-900 dark:text-neutral-100">
                       {project.name}

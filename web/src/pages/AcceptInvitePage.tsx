@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { MailOpen } from 'lucide-react'
 import { Button } from '@astryxdesign/core/Button'
 import { Divider } from '@astryxdesign/core/Divider'
@@ -15,6 +15,7 @@ import { AccessSummary } from '../components/AccessSummary'
 import { ROLE_DESCRIPTIONS, ROLE_LABELS } from '../lib/access'
 import { useOrg } from '../context/OrgContext'
 import { useAuth } from '../context/AuthContext'
+import { AuthSwitchLink } from '../components/AuthSwitchLink'
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -189,13 +190,7 @@ export function AcceptInvitePage() {
           <Button label="Decline" variant="ghost" width="100%" onClick={() => setDeclined(true)} />
         </VStack>
 
-        <Text type="body" color="secondary" size="xsm">
-          Not expecting this?{' '}
-          <Link to="/login" className="text-brand-navy underline dark:text-brand-orange">
-            Go to sign in
-          </Link>
-          .
-        </Text>
+        <AuthSwitchLink prompt="Not expecting this?" to="/login" label="Go to sign in" />
       </VStack>
     </Shell>
   )

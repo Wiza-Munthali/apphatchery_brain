@@ -10,6 +10,7 @@ import { Icon } from '@astryxdesign/core/Icon'
 import { Text } from '@astryxdesign/core/Text'
 import { VStack, HStack } from '@astryxdesign/core/Layout'
 import { useOrg } from '../context/OrgContext'
+import { EntityAvatar } from './EntityAvatar'
 import { loadConversations, saveConversations } from '../lib/chatStore'
 import { uid } from '../lib/id'
 import type { Conversation, Persona } from '../types'
@@ -115,11 +116,13 @@ export function Layout() {
               headingHref="/"
               superheadingHref="/"
               icon={
-                <div
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br ${project?.color ?? 'from-brand-orange to-brand-navy'} text-sm font-bold text-white`}
-                >
-                  {project?.initial ?? 'A'}
-                </div>
+                <EntityAvatar
+                  imageUrl={project?.avatarUrl}
+                  initial={project?.initial ?? 'A'}
+                  color={project?.color ?? 'from-brand-orange to-brand-navy'}
+                  size={28}
+                  radius="md"
+                />
               }
               headerEndContent={
                 <HStack gap={0.5} vAlign="center">

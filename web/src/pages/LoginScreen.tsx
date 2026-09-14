@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { LogIn, KeyRound, Sparkles } from 'lucide-react'
 import { Heading } from '@astryxdesign/core/Heading'
 import { Text } from '@astryxdesign/core/Text'
@@ -10,6 +9,7 @@ import { Divider } from '@astryxdesign/core/Divider'
 import { HStack, VStack } from '@astryxdesign/core/Layout'
 import { ShaderBackground } from '../components/ShaderBackground'
 import { useAuth } from '../context/AuthContext'
+import { AuthSwitchLink } from '../components/AuthSwitchLink'
 
 export function LoginScreen() {
   const { login, loginWithToken } = useAuth()
@@ -76,13 +76,7 @@ export function LoginScreen() {
 
         <Divider />
 
-        <Text type="body" color="secondary" size="xsm">
-          New here?{' '}
-          <Link to="/signup" className="text-brand-navy underline dark:text-brand-orange">
-            Create an organization
-          </Link>
-          .
-        </Text>
+        <AuthSwitchLink prompt="New here?" to="/signup" label="Create an organization" />
       </div>
     </div>
   )

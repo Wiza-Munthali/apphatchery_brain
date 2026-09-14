@@ -41,6 +41,7 @@ export interface CreateProjectInput {
   description: string
   color: string
   initial: string
+  avatarUrl?: string
 }
 
 export interface SaveConnectionInput {
@@ -71,7 +72,7 @@ interface OrgContextValue extends OrgState {
   getInvite: (inviteId: string) => Invite | undefined
 
   signUpOrg: (input: SignUpInput) => void
-  updateOrg: (patch: Partial<Pick<Org, 'name' | 'slug' | 'color' | 'initial' | 'defaultCadence'>>) => void
+  updateOrg: (patch: Partial<Pick<Org, 'name' | 'slug' | 'color' | 'initial' | 'avatarUrl' | 'defaultCadence'>>) => void
   /** Wipes the org back to a clean slate. Prototype stand-in for deletion. */
   resetOrg: () => void
 
@@ -209,7 +210,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   )
 
   const createProject: OrgContextValue['createProject'] = useCallback(
-    ({ name, description, color, initial }) => {
+    ({ name, description, color, initial, avatarUrl }) => {
       const base = slugify(name) || 'project'
       const project: Project = {
         // Ids are user-visible in the URL, so prefer the slug and only
@@ -220,6 +221,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         description: description.trim(),
         color,
         initial,
+        avatarUrl,
       }
       setState((prev) => {
         const taken = prev.projects.some((p) => p.id === base)

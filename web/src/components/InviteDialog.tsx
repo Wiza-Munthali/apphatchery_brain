@@ -3,7 +3,7 @@ import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog'
 import { Banner } from '@astryxdesign/core/Banner'
 import { Button } from '@astryxdesign/core/Button'
 import { Divider } from '@astryxdesign/core/Divider'
-import { HStack, VStack } from '@astryxdesign/core/Layout'
+import { HStack, Layout, LayoutContent, LayoutFooter, VStack } from '@astryxdesign/core/Layout'
 import { MultiSelector } from '@astryxdesign/core/MultiSelector'
 import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList'
 import { Selector } from '@astryxdesign/core/Selector'
@@ -211,23 +211,30 @@ export function InviteDialog({
   }
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} purpose="form" width={520} padding={0}>
-      <VStack>
-        <DialogHeader
-          title="Invite people"
-          subtitle="They’ll get an email with a link to join your organization."
-          onOpenChange={onOpenChange}
-          hasDivider
-        />
-        <div className="max-h-[65vh] overflow-y-auto px-5 py-4">
-          <VStack gap={4}>
-            <InviteForm draft={draft} onChange={onDraftChange} currentProjectName={currentProjectName} />
-            <Banner
-              status="info"
-              title="Prototype"
-              description="No email is actually sent. The invite appears under Pending invites, where you can copy its link."
-            />
-            <Divider />
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} purpose="form" width={520}>
+      <Layout
+        header={
+          <DialogHeader
+            title="Invite people"
+            subtitle="They’ll get an email with a link to join your organization."
+            onOpenChange={onOpenChange}
+            hasDivider
+          />
+        }
+        content={
+          <LayoutContent>
+            <VStack gap={4}>
+              <InviteForm draft={draft} onChange={onDraftChange} currentProjectName={currentProjectName} />
+              <Banner
+                status="info"
+                title="Prototype"
+                description="No email is actually sent. The invite appears under Pending invites, where you can copy its link."
+              />
+            </VStack>
+          </LayoutContent>
+        }
+        footer={
+          <LayoutFooter hasDivider>
             <HStack gap={2} hAlign="end">
               <Button label="Cancel" variant="ghost" onClick={() => onOpenChange(false)} />
               <Button
@@ -238,9 +245,9 @@ export function InviteDialog({
                 onClick={send}
               />
             </HStack>
-          </VStack>
-        </div>
-      </VStack>
+          </LayoutFooter>
+        }
+      />
     </Dialog>
   )
 }

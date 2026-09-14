@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Building2, Sparkles } from 'lucide-react'
 import { Banner } from '@astryxdesign/core/Banner'
 import { Button } from '@astryxdesign/core/Button'
@@ -12,6 +12,7 @@ import { TextInput } from '@astryxdesign/core/TextInput'
 import { ShaderBackground } from '../components/ShaderBackground'
 import { slugify, useOrg } from '../context/OrgContext'
 import { useAuth } from '../context/AuthContext'
+import { AuthSwitchLink } from '../components/AuthSwitchLink'
 
 /**
  * Organization signup — the entry point for a super admin bringing a new
@@ -124,13 +125,7 @@ export function SignUpPage() {
           onClick={submit}
         />
 
-        <Text type="body" color="secondary" size="xsm">
-          Already have an organization?{' '}
-          <Link to="/login" className="text-brand-navy underline dark:text-brand-orange">
-            Sign in instead
-          </Link>
-          .
-        </Text>
+        <AuthSwitchLink prompt="Already have an organization?" to="/login" label="Sign in instead" />
       </div>
     </div>
   )

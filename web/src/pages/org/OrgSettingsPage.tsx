@@ -11,7 +11,8 @@ import { Text } from '@astryxdesign/core/Text'
 import { TextInput } from '@astryxdesign/core/TextInput'
 import { useToast } from '@astryxdesign/core/Toast'
 import type { SyncCadence } from '../../types'
-import { PROJECT_COLORS, slugify, useOrg } from '../../context/OrgContext'
+import { slugify, useOrg } from '../../context/OrgContext'
+import { AvatarPicker } from '../../components/AvatarPicker'
 
 const CADENCE_OPTIONS = [
   { value: 'weekly', label: 'Weekly' },
@@ -27,6 +28,7 @@ export function OrgSettingsPage() {
   const [slug, setSlug] = useState(org.slug)
   const [initial, setInitial] = useState(org.initial)
   const [color, setColor] = useState(org.color)
+  const [avatarUrl, setAvatarUrl] = useState(org.avatarUrl)
   const [cadence, setCadence] = useState<SyncCadence>(org.defaultCadence)
   const [confirmReset, setConfirmReset] = useState(false)
 
@@ -35,10 +37,18 @@ export function OrgSettingsPage() {
     slug !== org.slug ||
     initial !== org.initial ||
     color !== org.color ||
+    avatarUrl !== org.avatarUrl ||
     cadence !== org.defaultCadence
 
   const save = () => {
-    updateOrg({ name: name.trim(), slug: slugify(slug), initial: initial.slice(0, 1).toUpperCase(), color, defaultCadence: cadence })
+    updateOrg({
+      name: name.trim(),
+      slug: slugify(slug),
+      initial: initial.slice(0, 1).toUpperCase(),
+      color,
+      avatarUrl,
+      defaultCadence: cadence,
+    })
     showToast({ body: 'Organization settings saved.' })
   }
 
@@ -72,35 +82,16 @@ export function OrgSettingsPage() {
                 slugify(slug) !== slug ? { type: 'warning', message: `Will be saved as “${slugify(slug)}”.` } : undefined
               }
             />
-            <HStack gap={3} vAlign="end">
-              <TextInput
-                label="Avatar letter"
-                value={initial}
-                onChange={(v) => setInitial(v.slice(0, 1))}
-                width={120}
-              />
-              <VStack gap={1.5}>
-                <Text type="label" color="secondary">
-                  Colour
-                </Text>
-                <HStack gap={1.5}>
-                  {PROJECT_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      aria-label={`Use colour ${c}`}
-                      aria-pressed={c === color}
-                      onClick={() => setColor(c)}
-                      className={`h-7 w-7 rounded-lg bg-gradient-to-br ${c} ${
-                        c === color
-                          ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-neutral-400 dark:ring-offset-neutral-900'
-                          : ''
-                      }`}
-                    />
-                  ))}
-                </HStack>
-              </VStack>
-            </HStack>
+            <AvatarPicker
+              label="Organization avatar"
+              description="Upload your organization’s logo, or use a letter on a coloured tile."
+              imageUrl={avatarUrl}
+              initial={initial}
+              color={color}
+              onImageChange={setAvatarUrl}
+              onInitialChange={setInitial}
+              onColorChange={setColor}
+            />
           </VStack>
         </Card>
 

@@ -9,6 +9,8 @@ export interface Project {
   description: string
   color: string
   initial: string
+  /** Uploaded logo as a data URL. When set, it replaces the colour+initial tile. */
+  avatarUrl?: string
 }
 
 export interface KBItem {
@@ -52,6 +54,8 @@ export interface Org {
   initial: string
   /** Tailwind gradient class fragment, matching Project.color. */
   color: string
+  /** Uploaded logo as a data URL. When set, it replaces the colour+initial tile. */
+  avatarUrl?: string
   /** Pre-selected sync frequency when a new connection is set up. */
   defaultCadence: SyncCadence
   createdAt: string

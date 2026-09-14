@@ -5,10 +5,9 @@ import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog'
 import { Banner } from '@astryxdesign/core/Banner'
 import { Button } from '@astryxdesign/core/Button'
 import { Card } from '@astryxdesign/core/Card'
-import { Divider } from '@astryxdesign/core/Divider'
 import { Grid } from '@astryxdesign/core/Grid'
 import { Icon } from '@astryxdesign/core/Icon'
-import { HStack, VStack } from '@astryxdesign/core/Layout'
+import { HStack, Layout, LayoutContent, LayoutFooter, VStack } from '@astryxdesign/core/Layout'
 import { ProgressBar } from '@astryxdesign/core/ProgressBar'
 import { Text } from '@astryxdesign/core/Text'
 import { TextArea } from '@astryxdesign/core/TextArea'
@@ -16,6 +15,8 @@ import { TextInput } from '@astryxdesign/core/TextInput'
 import type { Project } from '../types'
 import { AVAILABLE_PROVIDERS, type ProviderSpec } from '../data/providers'
 import { PROJECT_COLORS, useOrg } from '../context/OrgContext'
+import { AvatarPicker } from './AvatarPicker'
+import { EntityAvatar } from './EntityAvatar'
 import { ConnectSourceFlow } from './ConnectSourceDialog'
 import { InviteForm, buildInviteAccess, canSendInvite, emptyInviteDraft, parseEmails } from './InviteDialog'
 
@@ -44,6 +45,7 @@ export function NewProjectDialog({
   const [description, setDescription] = useState('')
   const [initial, setInitial] = useState('')
   const [color, setColor] = useState(PROJECT_COLORS[0])
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
 
   /** Set once step 1 completes — the project exists from then on. */
   const [project, setProject] = useState<Project | null>(null)
@@ -56,6 +58,7 @@ export function NewProjectDialog({
     setDescription('')
     setInitial('')
     setColor(PROJECT_COLORS[0])
+    setAvatarUrl(undefined)
     setProject(null)
     setActiveProvider(null)
     setInviteDraft(emptyInviteDraft('single'))
@@ -75,7 +78,7 @@ export function NewProjectDialog({
   const derivedInitial = (initial || name.trim()[0] || 'P').toUpperCase()
 
   const createAndAdvance = () => {
-    const created = createProject({ name, description, color, initial: derivedInitial })
+    const created = createProject({ name, description, color, initial: derivedInitial, avatarUrl })
     setProject(created)
     setStep('connect')
   }
@@ -111,42 +114,20 @@ export function NewProjectDialog({
         rows={3}
         isOptional
       />
-      <HStack gap={3} vAlign="end">
-        <TextInput
-          label="Avatar letter"
-          value={initial || derivedInitial}
-          onChange={(v) => setInitial(v.slice(0, 1))}
-          width={120}
-        />
-        <VStack gap={1.5}>
-          <Text type="label" color="secondary">
-            Colour
-          </Text>
-          <HStack gap={1.5}>
-            {PROJECT_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                aria-label={`Use colour ${c}`}
-                aria-pressed={c === color}
-                onClick={() => setColor(c)}
-                className={`h-7 w-7 rounded-lg bg-gradient-to-br ${c} ${
-                  c === color
-                    ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-neutral-400 dark:ring-offset-neutral-900'
-                    : ''
-                }`}
-              />
-            ))}
-          </HStack>
-        </VStack>
-      </HStack>
+
+      <AvatarPicker
+        label="Project avatar"
+        description="Upload the app’s logo, or use a letter on a coloured tile."
+        imageUrl={avatarUrl}
+        initial={derivedInitial}
+        color={color}
+        onImageChange={setAvatarUrl}
+        onInitialChange={setInitial}
+        onColorChange={setColor}
+      />
 
       <HStack gap={3} vAlign="center">
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${color} text-base font-bold text-white`}
-        >
-          {derivedInitial}
-        </div>
+        <EntityAvatar imageUrl={avatarUrl} initial={derivedInitial} color={color} size={40} />
         <Text type="body" size="sm" color="secondary">
           {name.trim() || 'Your project'} — this is how it appears on the picker.
         </Text>
@@ -262,36 +243,45 @@ export function NewProjectDialog({
   const stepNumber = STEPS.indexOf(step) + 1
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={(open) => (open ? onOpenChange(true) : close())} purpose="form" width={600} padding={0}>
-      <VStack>
-        <DialogHeader
-          title={STEP_TITLES[step].title}
-          subtitle={STEP_TITLES[step].subtitle}
-          onOpenChange={(open) => (open ? onOpenChange(true) : close())}
-          hasDivider
-        />
-        <div className="px-5 pt-4">
-          <ProgressBar
-            label="Progress"
-            isLabelHidden
-            value={stepNumber}
-            max={STEPS.length}
-            hasValueLabel
-            formatValueLabel={(v, m) => `Step ${v} of ${m}`}
+    <Dialog
+      isOpen={isOpen}
+      onOpenChange={(open) => (open ? onOpenChange(true) : close())}
+      purpose="form"
+      width={600}>
+      <Layout
+        header={
+          <DialogHeader
+            title={STEP_TITLES[step].title}
+            subtitle={STEP_TITLES[step].subtitle}
+            onOpenChange={(open) => (open ? onOpenChange(true) : close())}
+            hasDivider
           />
-        </div>
-        <div className="max-h-[62vh] overflow-y-auto px-5 py-4">{body}</div>
-        {footerContent && (
-          <>
-            <Divider />
-            <div className="px-5 py-3">
+        }
+        content={
+          <LayoutContent>
+            <VStack gap={4}>
+              <ProgressBar
+                label="Progress"
+                isLabelHidden
+                value={stepNumber}
+                max={STEPS.length}
+                hasValueLabel
+                formatValueLabel={(v, m) => `Step ${v} of ${m}`}
+              />
+              {body}
+            </VStack>
+          </LayoutContent>
+        }
+        footer={
+          footerContent ? (
+            <LayoutFooter hasDivider>
               <HStack gap={2} hAlign="end">
                 {footerContent}
               </HStack>
-            </div>
-          </>
-        )}
-      </VStack>
+            </LayoutFooter>
+          ) : undefined
+        }
+      />
     </Dialog>
   )
 }

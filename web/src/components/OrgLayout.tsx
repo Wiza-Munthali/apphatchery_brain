@@ -6,6 +6,7 @@ import { Avatar } from '@astryxdesign/core/Avatar'
 import { HStack, VStack } from '@astryxdesign/core/Layout'
 import { Text } from '@astryxdesign/core/Text'
 import { useOrg } from '../context/OrgContext'
+import { EntityAvatar } from './EntityAvatar'
 import { useAuth } from '../context/AuthContext'
 import { ROLE_LABELS } from '../lib/access'
 
@@ -39,11 +40,13 @@ export function OrgLayout() {
               headingHref="/"
               superheadingHref="/"
               icon={
-                <div
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br ${org.color} text-sm font-bold text-white`}
-                >
-                  {org.initial}
-                </div>
+                <EntityAvatar
+                  imageUrl={org.avatarUrl}
+                  initial={org.initial}
+                  color={org.color}
+                  size={28}
+                  radius="md"
+                />
               }
             />
           }

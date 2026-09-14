@@ -7,10 +7,9 @@ import { Button } from '@astryxdesign/core/Button'
 import { Card } from '@astryxdesign/core/Card'
 import { CheckboxInput } from '@astryxdesign/core/CheckboxInput'
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog'
-import { Divider } from '@astryxdesign/core/Divider'
 import { EmptyState } from '@astryxdesign/core/EmptyState'
 import { Icon } from '@astryxdesign/core/Icon'
-import { HStack, VStack } from '@astryxdesign/core/Layout'
+import { HStack, Layout, LayoutContent, LayoutFooter, VStack } from '@astryxdesign/core/Layout'
 import { MoreMenu } from '@astryxdesign/core/MoreMenu'
 import { MultiSelector } from '@astryxdesign/core/MultiSelector'
 import { RadioList, RadioListItem } from '@astryxdesign/core/RadioList'
@@ -68,35 +67,39 @@ function AccessDialog({
   const access = buildAccess(choice, ids)
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} purpose="form" width={480} padding={0}>
-      <VStack>
-        <DialogHeader title={title} subtitle={subtitle} onOpenChange={onOpenChange} hasDivider />
-        <div className="px-5 py-4">
-          <VStack gap={4}>
-            <RadioList label="Project access" value={choice} onChange={(v) => setChoice(v as AccessChoice)}>
-              <RadioListItem
-                value="all"
-                label="All projects"
-                description="Including any project created later."
-              />
-              <RadioListItem value="projects" label="Specific projects" description="Pick exactly which." />
-            </RadioList>
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange} purpose="form" width={480}>
+      <Layout
+        header={<DialogHeader title={title} subtitle={subtitle} onOpenChange={onOpenChange} hasDivider />}
+        content={
+          <LayoutContent>
+            <VStack gap={4}>
+              <RadioList label="Project access" value={choice} onChange={(v) => setChoice(v as AccessChoice)}>
+                <RadioListItem
+                  value="all"
+                  label="All projects"
+                  description="Including any project created later."
+                />
+                <RadioListItem value="projects" label="Specific projects" description="Pick exactly which." />
+              </RadioList>
 
-            {choice === 'projects' && (
-              <MultiSelector
-                label="Projects"
-                options={projects.map((p) => ({ value: p.id, label: p.name }))}
-                value={ids}
-                onChange={setIds}
-                placeholder="Select projects…"
-                triggerDisplay="badges"
-                hasSearch
-                hasSelectAll
-                status={isAccessEmpty(access) ? { type: 'error', message: 'Pick at least one project.' } : undefined}
-              />
-            )}
-
-            <Divider />
+              {choice === 'projects' && (
+                <MultiSelector
+                  label="Projects"
+                  options={projects.map((p) => ({ value: p.id, label: p.name }))}
+                  value={ids}
+                  onChange={setIds}
+                  placeholder="Select projects…"
+                  triggerDisplay="badges"
+                  hasSearch
+                  hasSelectAll
+                  status={isAccessEmpty(access) ? { type: 'error', message: 'Pick at least one project.' } : undefined}
+                />
+              )}
+            </VStack>
+          </LayoutContent>
+        }
+        footer={
+          <LayoutFooter hasDivider>
             <HStack gap={2} hAlign="end">
               <Button label="Cancel" variant="ghost" onClick={() => onOpenChange(false)} />
               <Button
@@ -110,9 +113,9 @@ function AccessDialog({
                 }}
               />
             </HStack>
-          </VStack>
-        </div>
-      </VStack>
+          </LayoutFooter>
+        }
+      />
     </Dialog>
   )
 }
