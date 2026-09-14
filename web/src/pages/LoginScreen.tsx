@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { LogIn, KeyRound, Sparkles } from 'lucide-react'
 import { Heading } from '@astryxdesign/core/Heading'
 import { Text } from '@astryxdesign/core/Text'
@@ -71,6 +72,16 @@ export function LoginScreen() {
         </VStack>
         <Text type="body" color="disabled" size="xsm">
           For people without a GitHub account — paste a token issued to you directly.
+        </Text>
+
+        <Divider />
+
+        <Text type="body" color="secondary" size="xsm">
+          New here?{' '}
+          <Link to="/signup" className="text-brand-navy underline dark:text-brand-orange">
+            Create an organization
+          </Link>
+          .
         </Text>
       </div>
     </div>

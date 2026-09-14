@@ -9,7 +9,7 @@ import { TextInput } from '@astryxdesign/core/TextInput'
 import { Icon } from '@astryxdesign/core/Icon'
 import { Text } from '@astryxdesign/core/Text'
 import { VStack, HStack } from '@astryxdesign/core/Layout'
-import { getProject } from '../data/mockData'
+import { useOrg } from '../context/OrgContext'
 import { loadConversations, saveConversations } from '../lib/chatStore'
 import { uid } from '../lib/id'
 import type { Conversation, Persona } from '../types'
@@ -29,6 +29,9 @@ export function Layout() {
   const navigate = useNavigate()
   const { projectId = '' } = useParams()
 
+  // From OrgContext rather than the fixtures, so a project created in this
+  // session gets its real name and colour in the shell.
+  const { getProject } = useOrg()
   const project = getProject(projectId)
 
   const [conversations, setConversations] = useState<Conversation[]>([])

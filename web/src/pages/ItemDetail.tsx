@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import { getItem, items } from '../data/mockData'
-import { SourceBadge } from '../components/SourceBadge'
+import { SOURCE_META, SourceBadge } from '../components/SourceBadge'
 import { ItemCard } from '../components/ItemCard'
 import { absoluteTime, relativeTime } from '../lib/time'
 
@@ -57,7 +57,7 @@ export function ItemDetail() {
         rel="noreferrer"
         className="mb-8 inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-400 hover:text-slate-900 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-100"
       >
-        View on {item.source === 'github' ? 'GitHub' : item.source === 'zulip' ? 'Zulip' : item.source === 'figma' ? 'Figma' : 'Notion'}
+        View on {SOURCE_META[item.source].label}
         <ExternalLink size={12} />
       </a>
 

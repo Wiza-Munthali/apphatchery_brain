@@ -10,11 +10,12 @@ import { DropdownMenu } from '@astryxdesign/core/DropdownMenu'
 import { MultiSelector } from '@astryxdesign/core/MultiSelector'
 import { ChatComposer, ChatComposerInput } from '@astryxdesign/core/Chat'
 import { generateAnswer, noAnswerThinking } from '../lib/engine'
-import { itemsForProject, getProject } from '../data/mockData'
+import { itemsForProject } from '../data/mockData'
+import { useOrg } from '../context/OrgContext'
 import { uid } from '../lib/id'
 import { ChatMessageBubble, NO_ANSWER_SENTINEL } from '../components/ChatMessageBubble'
 import { ShaderBackground } from '../components/ShaderBackground'
-import { SOURCE_META } from '../components/SourceBadge'
+import { SOURCE_IDS, SOURCE_META } from '../components/SourceBadge'
 import { askGateway, searchGateway, GatewayAuthError } from '../lib/gatewayClient'
 import type { ChatHistoryContext } from '../components/Layout'
 import type { ChatMessage, ChatMode, Conversation, Persona, SourceId } from '../types'
@@ -30,7 +31,8 @@ const MODEL_GROUPS = [
 ]
 const DEFAULT_MODEL = 'Claude Sonnet 5'
 
-const SOURCES: SourceId[] = ['github', 'zulip', 'figma', 'notion']
+// Derived from SOURCE_META so adding a connector doesn't need an edit here too.
+const SOURCES: SourceId[] = SOURCE_IDS
 const SOURCE_OPTIONS = SOURCES.map((s) => ({
   value: s,
   label: SOURCE_META[s].label,
@@ -66,6 +68,7 @@ export function AskPage() {
 
   const isGatewayProject = projectId === GATEWAY_PROJECT_ID
 
+  const { getProject } = useOrg()
   const project = getProject(projectId)
   const projectItems = useMemo(() => itemsForProject(projectId), [projectId])
   const filteredItems = useMemo(

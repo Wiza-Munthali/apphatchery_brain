@@ -1,4 +1,16 @@
-import type { KBItem, Topic, SourceConnector, Project, ProjectMetrics, Study, ItemTag } from '../types'
+import type {
+  KBItem,
+  Topic,
+  Connection,
+  Invite,
+  Org,
+  OrgMember,
+  Project,
+  ProjectMetrics,
+  Study,
+  ItemTag,
+} from '../types'
+import { discoveredFor } from '../lib/mockConnect'
 
 const iso = (offsetDays: number, hour = 10) => {
   const d = new Date()
@@ -7,14 +19,30 @@ const iso = (offsetDays: number, hour = 10) => {
   return d.toISOString()
 }
 
+const isoIn = (days: number) => {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString()
+}
+
 type RawItem = Omit<KBItem, 'projectId' | 'tag'>
 type RawTopic = Omit<Topic, 'projectId'>
-type RawConnector = Omit<SourceConnector, 'projectId'>
 type RawStudy = Omit<Study, 'projectId'>
+
+export const org: Org = {
+  id: 'org-apphatchery',
+  name: 'Emory AppHatchery',
+  slug: 'apphatchery',
+  initial: 'A',
+  color: 'from-brand-orange to-brand-navy',
+  defaultCadence: 'weekly',
+  createdAt: iso(420),
+}
 
 export const projects: Project[] = [
   {
     id: 'fabla',
+    orgId: org.id,
     name: 'Fabla',
     description:
       'Flutter research diary app (iOS + Android) — daily diary & EMA studies driven by researcher-configured protocols.',
@@ -23,10 +51,99 @@ export const projects: Project[] = [
   },
   {
     id: 'typeu',
+    orgId: org.id,
     name: 'TypeU',
     description: 'Typing practice app — onboarding, WPM analytics, and engagement features.',
     color: 'from-brand-navy to-brand-navy-dark',
     initial: 'T',
+  },
+]
+
+// ---------------------------------------------------------------------------
+// Membership — a spread of roles and ProjectAccess shapes so every rendering
+// path in the members table and invite preview has a real case to show.
+// ---------------------------------------------------------------------------
+
+export const members: OrgMember[] = [
+  {
+    id: 'mem-1',
+    orgId: org.id,
+    name: 'Kelvin Sande',
+    email: 'ksande@emory.edu',
+    role: 'owner',
+    status: 'active',
+    access: { kind: 'all' },
+    joinedAt: iso(420),
+    lastActiveAt: iso(0, 9),
+  },
+  {
+    id: 'mem-2',
+    orgId: org.id,
+    name: 'Wiza Munthali',
+    email: 'wiza@emory.edu',
+    role: 'admin',
+    status: 'active',
+    access: { kind: 'all' },
+    joinedAt: iso(300),
+    lastActiveAt: iso(0, 7),
+  },
+  {
+    id: 'mem-3',
+    orgId: org.id,
+    name: 'Marcus Webb',
+    email: 'marcus@emory.edu',
+    role: 'member',
+    status: 'active',
+    access: { kind: 'projects', projectIds: ['fabla'] },
+    joinedAt: iso(180),
+    lastActiveAt: iso(1, 16),
+  },
+  {
+    id: 'mem-4',
+    orgId: org.id,
+    name: 'Priya Raman',
+    email: 'priya@emory.edu',
+    role: 'member',
+    status: 'active',
+    access: { kind: 'projects', projectIds: ['fabla', 'typeu'] },
+    joinedAt: iso(95),
+    lastActiveAt: iso(3, 11),
+  },
+  {
+    id: 'mem-5',
+    orgId: org.id,
+    name: 'Dan Osei',
+    email: 'dan@emory.edu',
+    role: 'member',
+    status: 'suspended',
+    access: { kind: 'projects', projectIds: ['typeu'] },
+    joinedAt: iso(240),
+    lastActiveAt: iso(60, 14),
+  },
+]
+
+export const invites: Invite[] = [
+  {
+    id: 'inv-1',
+    orgId: org.id,
+    email: 'sofia@emory.edu',
+    role: 'member',
+    access: { kind: 'projects', projectIds: ['fabla'] },
+    invitedBy: 'mem-1',
+    invitedAt: iso(2, 15),
+    expiresAt: isoIn(5),
+    status: 'pending',
+  },
+  {
+    id: 'inv-2',
+    orgId: org.id,
+    email: 'tomas@emory.edu',
+    role: 'admin',
+    access: { kind: 'all' },
+    invitedBy: 'mem-2',
+    invitedAt: iso(21, 10),
+    expiresAt: iso(14, 10),
+    status: 'expired',
   },
 ]
 
@@ -384,41 +501,6 @@ const fablaTopics: RawTopic[] = [
   },
 ]
 
-const fablaConnectors: RawConnector[] = [
-  {
-    id: 'github',
-    name: 'GitHub',
-    status: 'connected',
-    scope: 'acme/storefront, acme/design-tokens',
-    lastSync: iso(0, 8),
-    itemCount: fablaItems.filter((i) => i.source === 'github').length,
-  },
-  {
-    id: 'zulip',
-    name: 'Zulip',
-    status: 'connected',
-    scope: '#checkout, #design, #incidents',
-    lastSync: iso(0, 9),
-    itemCount: fablaItems.filter((i) => i.source === 'zulip').length,
-  },
-  {
-    id: 'figma',
-    name: 'Figma',
-    status: 'syncing',
-    scope: 'Design / Checkout, Design / System',
-    lastSync: iso(0, 6),
-    itemCount: fablaItems.filter((i) => i.source === 'figma').length,
-  },
-  {
-    id: 'notion',
-    name: 'Notion',
-    status: 'error',
-    scope: 'Product Specs, Engineering Docs, Planning',
-    lastSync: iso(1, 22),
-    itemCount: fablaItems.filter((i) => i.source === 'notion').length,
-    error: 'Integration token expired — reconnect required.',
-  },
-]
 
 const fablaStudies: RawStudy[] = [
   {
@@ -642,41 +724,6 @@ const typeuTopics: RawTopic[] = [
   },
 ]
 
-const typeuConnectors: RawConnector[] = [
-  {
-    id: 'github',
-    name: 'GitHub',
-    status: 'connected',
-    scope: 'typeu/app',
-    lastSync: iso(0, 7),
-    itemCount: typeuItems.filter((i) => i.source === 'github').length,
-  },
-  {
-    id: 'zulip',
-    name: 'Zulip',
-    status: 'connected',
-    scope: '#product, #incidents',
-    lastSync: iso(0, 9),
-    itemCount: typeuItems.filter((i) => i.source === 'zulip').length,
-  },
-  {
-    id: 'figma',
-    name: 'Figma',
-    status: 'connected',
-    scope: 'Design / Onboarding',
-    lastSync: iso(0, 5),
-    itemCount: typeuItems.filter((i) => i.source === 'figma').length,
-  },
-  {
-    id: 'notion',
-    name: 'Notion',
-    status: 'syncing',
-    scope: 'Product Specs, Planning',
-    lastSync: iso(0, 4),
-    itemCount: typeuItems.filter((i) => i.source === 'notion').length,
-  },
-]
-
 const typeuStudies: RawStudy[] = [
   {
     id: 'study-typeu-1',
@@ -757,10 +804,95 @@ export const topics: Topic[] = [
   ...withProject(typeuTopics, 'typeu'),
 ] as Topic[]
 
-export const connectors: SourceConnector[] = [
-  ...withProject(fablaConnectors, 'fabla'),
-  ...withProject(typeuConnectors, 'typeu'),
-] as SourceConnector[]
+// ---------------------------------------------------------------------------
+// Connections
+//
+// Only providers that have actually been connected get a record. A provider
+// with no record renders as "Not connected" — so Slack is absent below on
+// purpose, to exercise that path. Statuses cover every case the UI handles,
+// including `reauth_required` (Notion on Fabla), which needs a Reconnect
+// button rather than a Resync.
+// ---------------------------------------------------------------------------
+
+const countItems = (projectId: string, source: KBItem['source']) =>
+  items.filter((i) => i.projectId === projectId && i.source === source).length
+
+const connection = (
+  projectId: string,
+  source: KBItem['source'],
+  selectedResourceIds: string[],
+  rest: Partial<Connection> = {},
+): Connection => ({
+  id: `conn-${projectId}-${source}`,
+  orgId: org.id,
+  projectId,
+  source,
+  status: 'connected',
+  accountLabel: '',
+  authKind: 'oauth',
+  grantedScopes: [],
+  selectedResourceIds,
+  discovered: discoveredFor(source),
+  connectedBy: 'mem-1',
+  connectedAt: iso(120),
+  lastSync: iso(0, 8),
+  itemCount: countItems(projectId, source),
+  cadence: 'weekly',
+  ...rest,
+})
+
+export const connections: Connection[] = [
+  connection('fabla', 'github', ['repo:AppHatchery/Fabla-Front-end', 'repo:AppHatchery/Fabla-Backend'], {
+    authKind: 'app_install',
+    accountLabel: 'AppHatchery · GitHub App #4821',
+    grantedScopes: ['Metadata: read', 'Contents: read', 'Issues: read', 'Pull requests: read'],
+    lastSync: iso(0, 8),
+  }),
+  connection('fabla', 'zulip', ['stream:fabla-pod'], {
+    authKind: 'api_key',
+    accountLabel: 'brain-sync-bot@apphatchery.zulipchat.com',
+    grantedScopes: ['GET /users/me', 'GET /users/me/subscriptions', 'GET /messages'],
+    lastSync: iso(0, 9),
+  }),
+  connection('fabla', 'figma', ['file:fabla-app', 'file:fabla-ds'], {
+    status: 'syncing',
+    accountLabel: 'AppHatchery · Brain (OAuth)',
+    grantedScopes: ['files:read', 'file_comments:read'],
+    lastSync: iso(0, 6),
+  }),
+  connection('fabla', 'notion', ['page:audio-diaries'], {
+    status: 'reauth_required',
+    accountLabel: 'AppHatchery workspace · Brain integration',
+    grantedScopes: ['read_content', 'read_user_information'],
+    lastSync: iso(1, 22),
+    error: 'Notion revoked this integration’s token. Reconnect to resume syncing.',
+  }),
+
+  connection('typeu', 'github', ['repo:AppHatchery/TypeU-App'], {
+    authKind: 'app_install',
+    accountLabel: 'AppHatchery · GitHub App #4821',
+    grantedScopes: ['Metadata: read', 'Contents: read', 'Issues: read', 'Pull requests: read'],
+    lastSync: iso(0, 7),
+  }),
+  connection('typeu', 'zulip', ['stream:engineering'], {
+    authKind: 'api_key',
+    accountLabel: 'brain-sync-bot@apphatchery.zulipchat.com',
+    grantedScopes: ['GET /users/me', 'GET /users/me/subscriptions', 'GET /messages'],
+    lastSync: iso(0, 9),
+  }),
+  connection('typeu', 'figma', ['file:typeu-onboarding'], {
+    accountLabel: 'AppHatchery · Brain (OAuth)',
+    grantedScopes: ['files:read', 'file_comments:read'],
+    lastSync: iso(0, 5),
+  }),
+  connection('typeu', 'notion', ['db:roadmap'], {
+    status: 'error',
+    accountLabel: 'AppHatchery workspace · Brain integration',
+    grantedScopes: ['read_content', 'read_user_information'],
+    lastSync: iso(0, 4),
+    error: 'Last sync hit Notion’s rate limit after 812 pages. Retrying picks up where it stopped.',
+  }),
+]
 
 export const studies: Study[] = [
   ...withProject(fablaStudies, 'fabla'),
@@ -791,6 +923,5 @@ export const getProject = (id: string) => projects.find((p) => p.id === id)
 
 export const itemsForProject = (projectId: string) => items.filter((i) => i.projectId === projectId)
 export const topicsForProject = (projectId: string) => topics.filter((t) => t.projectId === projectId)
-export const connectorsForProject = (projectId: string) => connectors.filter((c) => c.projectId === projectId)
 export const studiesForProject = (projectId: string) => studies.filter((s) => s.projectId === projectId)
 export const metricsForProject = (projectId: string) => metrics.find((m) => m.projectId === projectId)

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { Link, type LinkProps } from 'react-router-dom'
 import { Theme } from '@astryxdesign/core/theme'
 import { LinkProvider } from '@astryxdesign/core/Link'
+import { LayerProvider } from '@astryxdesign/core/Layer'
 import { neutralTheme } from '@astryxdesign/theme-neutral/built'
 import './index.css'
 import App from './App.tsx'
@@ -18,9 +19,12 @@ function RouterLinkAdapter({ href, ...rest }: Omit<LinkProps, 'to'> & { href?: s
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Theme theme={neutralTheme}>
-      <LinkProvider component={RouterLinkAdapter}>
-        <App />
-      </LinkProvider>
+      {/* LayerProvider hosts the toast viewport — useToast() is inert without it. */}
+      <LayerProvider>
+        <LinkProvider component={RouterLinkAdapter}>
+          <App />
+        </LinkProvider>
+      </LayerProvider>
     </Theme>
   </StrictMode>,
 )

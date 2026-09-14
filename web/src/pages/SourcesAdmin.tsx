@@ -1,97 +1,95 @@
-import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { CircleCheck, CircleAlert, Loader2, RefreshCw, Plus } from 'lucide-react'
-import { connectorsForProject } from '../data/mockData'
-import { SourceBadge } from '../components/SourceBadge'
-import { relativeTime, absoluteTime } from '../lib/time'
-import type { ConnectorStatus } from '../types'
-
-const STATUS_META: Record<ConnectorStatus, { label: string; icon: typeof CircleCheck; classes: string }> = {
-  connected: { label: 'Connected', icon: CircleCheck, classes: 'text-emerald-600 dark:text-emerald-400' },
-  syncing: { label: 'Syncing', icon: Loader2, classes: 'text-amber-600 dark:text-amber-400' },
-  error: { label: 'Needs attention', icon: CircleAlert, classes: 'text-red-600 dark:text-red-400' },
-}
+import { Settings2 } from 'lucide-react'
+import { Banner } from '@astryxdesign/core/Banner'
+import { Card } from '@astryxdesign/core/Card'
+import { Grid } from '@astryxdesign/core/Grid'
+import { Icon } from '@astryxdesign/core/Icon'
+import { HStack, VStack } from '@astryxdesign/core/Layout'
+import { Text } from '@astryxdesign/core/Text'
+import type { SourceId } from '../types'
+import { AVAILABLE_PROVIDERS, COMING_SOON_PROVIDERS } from '../data/providers'
+import { useOrg } from '../context/OrgContext'
+import { ConnectionCard } from '../components/ConnectionCard'
 
 export function SourcesAdmin() {
   const { projectId = '' } = useParams()
-  const [connectors, setConnectors] = useState(() => connectorsForProject(projectId))
-  const [resyncing, setResyncing] = useState<string | null>(null)
+  const { getProject, connectionFor, connectionsForProject } = useOrg()
 
-  useEffect(() => {
-    setConnectors(connectorsForProject(projectId))
-  }, [projectId])
-
-  const resync = (id: string) => {
-    setResyncing(id)
-    setConnectors((prev) => prev.map((c) => (c.id === id ? { ...c, status: 'syncing' } : c)))
-    setTimeout(() => {
-      setConnectors((prev) =>
-        prev.map((c) =>
-          c.id === id ? { ...c, status: 'connected', lastSync: new Date().toISOString(), error: undefined } : c,
-        ),
-      )
-      setResyncing(null)
-    }, 1400)
-  }
+  const project = getProject(projectId)
+  const connections = connectionsForProject(projectId)
+  const needsAttention = connections.filter(
+    (c) => c.status === 'reauth_required' || c.status === 'error',
+  )
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">Sources & Sync</h1>
-          <p className="text-sm text-slate-400 dark:text-neutral-500">Manage connected platforms and ingestion scope.</p>
-        </div>
-        <button className="flex items-center gap-1.5 rounded-md bg-brand-navy px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-navy-dark">
-          <Plus size={13} />
-          Add source
-        </button>
-      </div>
+      <VStack gap={5}>
+        <VStack gap={1}>
+          <HStack gap={1.5} vAlign="center">
+            <Icon icon={Settings2} size="sm" />
+            <Text type="body" size="lg" weight="semibold">
+              Sources &amp; Sync
+            </Text>
+          </HStack>
+          <Text type="body" size="sm" color="secondary">
+            What {project?.name ?? 'this project'} indexes, and the account each connection runs as.
+            Only the resources selected here are ever read.
+          </Text>
+        </VStack>
 
-      <div className="flex flex-col gap-3">
-        {connectors.map((c) => {
-          const status = STATUS_META[c.status]
-          const StatusIcon = status.icon
-          return (
-            <div key={c.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="mb-1.5 flex items-center gap-2">
-                    <SourceBadge source={c.id} size="md" />
-                    <span className={`flex items-center gap-1 text-xs font-medium ${status.classes}`}>
-                      <StatusIcon size={12} className={c.status === 'syncing' ? 'animate-spin' : ''} />
-                      {status.label}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 dark:text-neutral-400">Scope: {c.scope}</p>
-                  {c.error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{c.error}</p>}
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-slate-400 dark:text-neutral-500" title={absoluteTime(c.lastSync)}>
-                    Last sync {relativeTime(c.lastSync)}
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-400 dark:text-neutral-500">{c.itemCount} items indexed</p>
-                </div>
-              </div>
-              <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-neutral-800">
-                <button
-                  onClick={() => resync(c.id)}
-                  disabled={resyncing === c.id}
-                  className="flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:border-slate-400 hover:text-slate-800 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-100"
-                >
-                  <RefreshCw size={12} className={resyncing === c.id ? 'animate-spin' : ''} />
-                  Resync now
-                </button>
-                <button className="rounded-md border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:border-slate-400 hover:text-slate-800 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-neutral-600 dark:hover:text-neutral-100">
-                  Edit scope
-                </button>
-                <button className="ml-auto rounded-md px-2.5 py-1 text-xs text-red-500/80 hover:text-red-600 dark:text-red-400/80 dark:hover:text-red-400">
-                  Revoke access
-                </button>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+        {needsAttention.length > 0 && (
+          <Banner
+            status={needsAttention.some((c) => c.status === 'reauth_required') ? 'error' : 'warning'}
+            title={`${needsAttention.length} connection${needsAttention.length === 1 ? '' : 's'} need attention`}
+            description={needsAttention
+              .map((c) => `${c.source}: ${c.error ?? 'see below'}`)
+              .join(' · ')}
+          />
+        )}
+
+        <Grid columns={{ minWidth: 320, max: 2 }} gap={4}>
+          {AVAILABLE_PROVIDERS.map((provider) => (
+            <ConnectionCard
+              key={provider.id}
+              provider={provider}
+              projectId={projectId}
+              connection={connectionFor(projectId, provider.id as SourceId)}
+            />
+          ))}
+        </Grid>
+
+        <VStack gap={3}>
+          <VStack gap={0.5}>
+            <Text type="label" weight="semibold" color="secondary">
+              Coming soon
+            </Text>
+            <Text type="body" size="xsm" color="disabled">
+              Not available yet. Each needs the same treatment as the connectors above — least
+              privilege scopes, explicit resource selection, and a revocation path.
+            </Text>
+          </VStack>
+          <Grid columns={{ minWidth: 200, max: 4 }} gap={3}>
+            {COMING_SOON_PROVIDERS.map((provider) => {
+              const ProviderIcon = provider.icon
+              return (
+                <Card key={provider.id} padding={3} variant="muted">
+                  <VStack gap={1.5}>
+                    <HStack gap={2} vAlign="center">
+                      <Icon icon={ProviderIcon} size="sm" color="disabled" />
+                      <Text type="body" size="sm" weight="semibold" color="disabled">
+                        {provider.name}
+                      </Text>
+                    </HStack>
+                    <Text type="body" size="xsm" color="disabled" maxLines={3}>
+                      {provider.authSummary}
+                    </Text>
+                  </VStack>
+                </Card>
+              )
+            })}
+          </Grid>
+        </VStack>
+      </VStack>
     </div>
   )
 }

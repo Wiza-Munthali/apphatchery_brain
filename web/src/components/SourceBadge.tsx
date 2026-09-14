@@ -1,4 +1,4 @@
-import { GitBranch, MessageCircle, Frame, FileText } from 'lucide-react'
+import { GitBranch, MessageCircle, MessagesSquare, Frame, FileText } from 'lucide-react'
 import type { SourceId } from '../types'
 
 export const SOURCE_META: Record<
@@ -27,6 +27,12 @@ export const SOURCE_META: Record<
     classes:
       'bg-neutral-100 text-neutral-700 border-neutral-300 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-600',
   },
+  slack: {
+    label: 'Slack',
+    icon: MessagesSquare,
+    classes:
+      'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950 dark:text-violet-300 dark:border-violet-800',
+  },
 }
 
 export const SOURCE_HEX: Record<SourceId, string> = {
@@ -34,7 +40,10 @@ export const SOURCE_HEX: Record<SourceId, string> = {
   zulip: '#3b82f6',
   figma: '#d946ef',
   notion: '#737373',
+  slack: '#8b5cf6',
 }
+
+export const SOURCE_IDS = Object.keys(SOURCE_META) as SourceId[]
 
 export function SourceBadge({ source, size = 'sm' }: { source: SourceId; size?: 'sm' | 'md' }) {
   const meta = SOURCE_META[source]

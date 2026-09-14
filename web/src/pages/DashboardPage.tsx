@@ -6,7 +6,8 @@ import { Text } from '@astryxdesign/core/Text'
 import { VStack, HStack } from '@astryxdesign/core/Layout'
 import { Badge } from '@astryxdesign/core/Badge'
 import { Icon, type IconType } from '@astryxdesign/core/Icon'
-import { studiesForProject, getProject } from '../data/mockData'
+import { studiesForProject } from '../data/mockData'
+import { useOrg } from '../context/OrgContext'
 import { relativeTime } from '../lib/time'
 import type { StudyStatus } from '../types'
 
@@ -36,6 +37,7 @@ function StatCard({ label, value, icon }: { label: string; value: number; icon: 
 
 export function DashboardPage() {
   const { projectId = '' } = useParams()
+  const { getProject } = useOrg()
   const project = getProject(projectId)
   const studies = studiesForProject(projectId)
 
