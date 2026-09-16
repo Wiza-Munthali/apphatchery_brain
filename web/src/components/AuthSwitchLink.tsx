@@ -15,7 +15,7 @@ export function AuthSwitchLink({ prompt, to, label }: { prompt: string; to: stri
       <span className="text-slate-500 dark:text-neutral-400">{prompt}</span>
       <Link
         to={to}
-        className="font-semibold text-brand-navy underline decoration-2 underline-offset-2 transition-colors hover:text-brand-navy-dark dark:text-brand-orange dark:hover:text-brand-orange-dark"
+        className="font-semibold text-brand-navy transition-colors hover:text-brand-navy-dark dark:text-brand-orange dark:hover:text-brand-orange-dark"
       >
         {label}
       </Link>
