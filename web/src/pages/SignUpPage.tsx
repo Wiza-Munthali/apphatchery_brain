@@ -10,7 +10,8 @@ import { HStack, VStack } from '@astryxdesign/core/Layout'
 import { Text } from '@astryxdesign/core/Text'
 import { TextInput } from '@astryxdesign/core/TextInput'
 import { ShaderBackground } from '../components/ShaderBackground'
-import { slugify, useOrg } from '../context/OrgContext'
+import { PROJECT_COLORS, slugify, useOrg } from '../context/OrgContext'
+import { AvatarPicker } from '../components/AvatarPicker'
 import { useAuth } from '../context/AuthContext'
 import { AuthSwitchLink } from '../components/AuthSwitchLink'
 
@@ -29,8 +30,14 @@ export function SignUpPage() {
   const [password, setPassword] = useState('')
   const [orgName, setOrgName] = useState('')
   const [slugOverride, setSlugOverride] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
+  const [color, setColor] = useState(PROJECT_COLORS[0])
+  const [initialOverride, setInitialOverride] = useState<string | null>(null)
 
   const slug = slugOverride ?? slugify(orgName)
+  // Derived from the name until the admin types their own letter, so the
+  // preview is never blank while they fill the form in.
+  const initial = (initialOverride || orgName.trim()[0] || 'O').toUpperCase()
 
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)
   const passwordLongEnough = password.length >= 12
@@ -39,7 +46,15 @@ export function SignUpPage() {
 
   const submit = () => {
     if (!canSubmit) return
-    signUpOrg({ orgName: orgName.trim(), slug, adminName: adminName.trim(), adminEmail: adminEmail.trim() })
+    signUpOrg({
+      orgName: orgName.trim(),
+      slug,
+      adminName: adminName.trim(),
+      adminEmail: adminEmail.trim(),
+      avatarUrl,
+      color,
+      initial,
+    })
     startLocalSession()
     navigate('/', { replace: true })
   }
@@ -107,6 +122,17 @@ export function SignUpPage() {
             value={slug}
             onChange={(v) => setSlugOverride(slugify(v))}
             isRequired
+          />
+
+          <AvatarPicker
+            label="Organization logo"
+            description="Optional. Upload your logo, or use a letter on a coloured tile."
+            imageUrl={avatarUrl}
+            initial={initial}
+            color={color}
+            onImageChange={setAvatarUrl}
+            onInitialChange={setInitialOverride}
+            onColorChange={setColor}
           />
         </VStack>
 

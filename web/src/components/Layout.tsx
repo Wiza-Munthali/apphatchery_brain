@@ -1,8 +1,8 @@
-import { Outlet, useNavigate, useParams } from 'react-router-dom'
+import { Link, Outlet, useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Sparkles, Settings2, Network, Plus, MessageSquare, Trash2, Search, LayoutDashboard, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Sparkles, Settings2, Network, Plus, MessageSquare, Trash2, Search, LayoutDashboard, LayoutGrid, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { AppShell } from '@astryxdesign/core/AppShell'
-import { SideNav, SideNavHeading, SideNavItem, SideNavSection } from '@astryxdesign/core/SideNav'
+import { SideNav, SideNavItem, SideNavSection } from '@astryxdesign/core/SideNav'
 import { IconButton } from '@astryxdesign/core/IconButton'
 import { ClickableCard } from '@astryxdesign/core/ClickableCard'
 import { TextInput } from '@astryxdesign/core/TextInput'
@@ -32,7 +32,7 @@ export function Layout() {
 
   // From OrgContext rather than the fixtures, so a project created in this
   // session gets its real name and colour in the shell.
-  const { getProject } = useOrg()
+  const { org, getProject } = useOrg()
   const project = getProject(projectId)
 
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -110,29 +110,63 @@ export function Layout() {
         <SideNav
           collapsible={{ isCollapsed: collapsed, onCollapsedChange: setCollapsed, hasButton: false }}
           header={
-            <SideNavHeading
-              heading={project?.name ?? 'Apphatchery Brain'}
-              superheading="Apphatchery Brain"
-              headingHref="/"
-              superheadingHref="/"
-              icon={
+            /*
+             * Two rows rather than one, because the org and the project are
+             * different things and each has its own logo. The previous single
+             * row put the project's avatar next to the product name
+             * ("Apphatchery Brain"), which described neither, and left the
+             * organization invisible inside a multi-tenant app.
+             */
+            collapsed ? (
+              <div className="flex justify-center py-1">
                 <EntityAvatar
                   imageUrl={project?.avatarUrl}
                   initial={project?.initial ?? 'A'}
                   color={project?.color ?? 'from-brand-orange to-brand-navy'}
                   size={28}
                   radius="md"
+                  alt={project?.name}
                 />
-              }
-              headerEndContent={
-                <HStack gap={0.5} vAlign="center">
-                  <IconButton
-                    label="Search chat history"
-                    icon={<Icon icon={Search} size="sm" />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSearchOpen((v) => !v)}
+              </div>
+            ) : (
+              <VStack gap={1.5}>
+                <Link
+                  to="/"
+                  title={`All projects in ${org.name}`}
+                  className="group flex items-center gap-2 rounded-md px-1 py-1 transition hover:bg-slate-100 dark:hover:bg-neutral-800"
+                >
+                  <EntityAvatar
+                    imageUrl={org.avatarUrl}
+                    initial={org.initial}
+                    color={org.color}
+                    size={18}
+                    radius="md"
                   />
+                  <div className="min-w-0 flex-1">
+                    <Text type="body" size="xsm" color="secondary" maxLines={1}>
+                      {org.name}
+                    </Text>
+                  </div>
+                  <LayoutGrid
+                    size={12}
+                    aria-hidden
+                    className="shrink-0 text-slate-300 transition group-hover:text-slate-600 dark:text-neutral-600 dark:group-hover:text-neutral-300"
+                  />
+                </Link>
+
+                <HStack gap={2} vAlign="center" className="px-1">
+                  <EntityAvatar
+                    imageUrl={project?.avatarUrl}
+                    initial={project?.initial ?? 'A'}
+                    color={project?.color ?? 'from-brand-orange to-brand-navy'}
+                    size={32}
+                    radius="lg"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <Text type="body" size="lg" weight="semibold" maxLines={1}>
+                      {project?.name ?? 'Apphatchery Brain'}
+                    </Text>
+                  </div>
                   <IconButton
                     label="Collapse sidebar"
                     icon={<Icon icon={PanelLeftClose} size="sm" />}
@@ -141,8 +175,8 @@ export function Layout() {
                     onClick={() => setCollapsed(true)}
                   />
                 </HStack>
-              }
-            />
+              </VStack>
+            )
           }
           topContent={
             <VStack gap={2}>
@@ -156,7 +190,31 @@ export function Layout() {
                 />
               )}
               <SideNavItem label="New chat" icon={Plus} onClick={newChat} />
-              {searchOpen && !collapsed && (
+            </VStack>
+          }
+        >
+          <SideNavSection title="Navigate" isHeaderHidden={collapsed}>
+            {navItems.map(({ to, label, icon }) => (
+              <SideNavItem key={to} label={label} icon={icon} href={to} isSelected={currentPath === to} />
+            ))}
+          </SideNavSection>
+
+          {!collapsed && (
+            /* The search box lives in this section because it searches *this*
+               list. Beside the project name it read as a project-wide search. */
+            <SideNavSection
+              title="History"
+              endContent={
+                <IconButton
+                  label="Search chat history"
+                  icon={<Icon icon={Search} size="sm" />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchOpen((v) => !v)}
+                />
+              }
+            >
+              {searchOpen && (
                 <TextInput
                   label="Search chat history"
                   isLabelHidden
@@ -168,17 +226,6 @@ export function Layout() {
                   hasAutoFocus
                 />
               )}
-            </VStack>
-          }
-        >
-          <SideNavSection title="Navigate" isHeaderHidden={collapsed}>
-            {navItems.map(({ to, label, icon }) => (
-              <SideNavItem key={to} label={label} icon={icon} href={to} isSelected={currentPath === to} />
-            ))}
-          </SideNavSection>
-
-          {!collapsed && (
-            <SideNavSection title="History">
               {filteredConversations.length === 0 && (
                 <Text type="body" size="sm" color="disabled">
                   {historyQuery ? 'No matching conversations.' : 'No conversations yet.'}

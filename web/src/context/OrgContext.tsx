@@ -60,6 +60,12 @@ export interface SignUpInput {
   slug: string
   adminName: string
   adminEmail: string
+  /** Uploaded logo, if the admin picked one during signup. */
+  avatarUrl?: string
+  /** Falls back to the first palette colour when no logo is set. */
+  color?: string
+  /** Falls back to the first letter of the organization name. */
+  initial?: string
 }
 
 interface OrgContextValue extends OrgState {
@@ -157,7 +163,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const patch = useCallback((fn: (prev: OrgState) => OrgState) => setState(fn), [])
 
   const signUpOrg = useCallback(
-    ({ orgName, slug, adminName, adminEmail }: SignUpInput) => {
+    ({ orgName, slug, adminName, adminEmail, avatarUrl, color, initial }: SignUpInput) => {
       const orgId = `org-${slug || uid()}`
       const owner: OrgMember = {
         id: uid(),
@@ -177,8 +183,9 @@ export function OrgProvider({ children }: { children: ReactNode }) {
           id: orgId,
           name: orgName,
           slug,
-          initial: (orgName.trim()[0] ?? 'O').toUpperCase(),
-          color: PROJECT_COLORS[0],
+          initial: (initial || orgName.trim()[0] || 'O').toUpperCase(),
+          color: color ?? PROJECT_COLORS[0],
+          avatarUrl,
           defaultCadence: 'weekly',
           createdAt: new Date().toISOString(),
         },
