@@ -78,6 +78,12 @@ interface OrgContextValue extends OrgState {
   getInvite: (inviteId: string) => Invite | undefined
 
   signUpOrg: (input: SignUpInput) => void
+  /**
+   * Point the session at the member with this email, so the app shows the
+   * person who actually signed in. Unknown emails leave the current user
+   * alone — the prototype still lets them in, as the owner.
+   */
+  signInAs: (email: string) => void
   updateOrg: (patch: Partial<Pick<Org, 'name' | 'slug' | 'color' | 'initial' | 'avatarUrl' | 'defaultCadence'>>) => void
   /** Wipes the org back to a clean slate. Prototype stand-in for deletion. */
   resetOrg: () => void
@@ -196,6 +202,17 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       })
     },
     [],
+  )
+
+  const signInAs: OrgContextValue['signInAs'] = useCallback(
+    (email) =>
+      patch((prev) => {
+        const match = prev.members.find(
+          (m) => m.email.toLowerCase() === email.trim().toLowerCase(),
+        )
+        return match ? { ...prev, currentUserId: match.id } : prev
+      }),
+    [patch],
   )
 
   const updateOrg: OrgContextValue['updateOrg'] = useCallback(
@@ -320,6 +337,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
           ...prev,
           members: [...prev.members, member],
           invites: prev.invites.map((i) => (i.id === inviteId ? { ...i, status: 'accepted' } : i)),
+          // The person who just accepted is the one now using the app.
+          currentUserId: member.id,
         }
       }),
     [patch],
@@ -436,7 +455,9 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const value = useMemo<OrgContextValue>(
     () => ({
       ...state,
-      currentUser: state.members[0],
+      // Falls back to the owner when nothing has been selected yet, or when the
+      // selected member has since been removed.
+      currentUser: state.members.find((m) => m.id === state.currentUserId) ?? state.members[0],
       connectionsForProject: (projectId) => state.connections.filter((c) => c.projectId === projectId),
       connectionFor: (projectId, source) =>
         state.connections.find((c) => c.projectId === projectId && c.source === source),
@@ -444,6 +465,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       getMember: (memberId) => state.members.find((m) => m.id === memberId),
       getInvite: (inviteId) => state.invites.find((i) => i.id === inviteId),
       signUpOrg,
+      signInAs,
       updateOrg,
       resetOrg,
       createProject,
@@ -464,6 +486,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     [
       state,
       signUpOrg,
+      signInAs,
       updateOrg,
       resetOrg,
       createProject,

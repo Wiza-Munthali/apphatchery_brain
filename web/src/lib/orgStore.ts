@@ -18,6 +18,11 @@ export interface OrgState {
   invites: Invite[]
   projects: Project[]
   connections: Connection[]
+  /**
+   * Which member the app is acting as. Optional so blobs written before this
+   * existed still load — `undefined` falls back to the org owner.
+   */
+  currentUserId?: string
 }
 
 const storageKey = (orgId: string) => `brain.org.${orgId}`

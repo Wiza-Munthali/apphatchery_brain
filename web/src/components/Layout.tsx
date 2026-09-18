@@ -130,18 +130,14 @@ export function Layout() {
               </div>
             ) : (
               <VStack gap={1.5}>
+                {/* Name only — no mark. The project below owns the one avatar
+                    in this header, so a second tile here competed with it for
+                    attention instead of reading as the container above it. */}
                 <Link
                   to="/"
                   title={`All projects in ${org.name}`}
-                  className="group flex items-center gap-2 rounded-md px-1 py-1 transition hover:bg-slate-100 dark:hover:bg-neutral-800"
+                  className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition hover:bg-slate-100 dark:hover:bg-neutral-800"
                 >
-                  <EntityAvatar
-                    imageUrl={org.avatarUrl}
-                    initial={org.initial}
-                    color={org.color}
-                    size={18}
-                    radius="md"
-                  />
                   <div className="min-w-0 flex-1">
                     <Text type="body" size="xsm" color="secondary" maxLines={1}>
                       {org.name}
