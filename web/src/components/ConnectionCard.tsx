@@ -43,7 +43,9 @@ export function ConnectionCard({
 
   return (
     <>
-      <Card padding={4}>
+      {/* data-source gives each card a stable hook for tests and for support
+          ("open devtools, find data-source=notion") without relying on DOM shape. */}
+      <Card padding={4} data-source={provider.id}>
         <VStack gap={3}>
           <HStack gap={2} vAlign="center">
             <Icon icon={ProviderIcon} size="sm" />

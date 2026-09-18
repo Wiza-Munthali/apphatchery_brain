@@ -843,8 +843,8 @@ const connection = (
 
 export const connections: Connection[] = [
   connection('fabla', 'github', ['repo:AppHatchery/Fabla-Front-end', 'repo:AppHatchery/Fabla-Backend'], {
-    authKind: 'app_install',
-    accountLabel: 'AppHatchery · GitHub App #4821',
+    authKind: 'api_key',
+    accountLabel: 'AppHatchery · fine-grained token',
     grantedScopes: ['Metadata: read', 'Contents: read', 'Issues: read', 'Pull requests: read'],
     lastSync: iso(0, 8),
   }),
@@ -862,6 +862,7 @@ export const connections: Connection[] = [
   }),
   connection('fabla', 'notion', ['page:audio-diaries'], {
     status: 'reauth_required',
+    authKind: 'api_key',
     accountLabel: 'AppHatchery workspace · Brain integration',
     grantedScopes: ['read_content', 'read_user_information'],
     lastSync: iso(1, 22),
@@ -869,8 +870,8 @@ export const connections: Connection[] = [
   }),
 
   connection('typeu', 'github', ['repo:AppHatchery/TypeU-App'], {
-    authKind: 'app_install',
-    accountLabel: 'AppHatchery · GitHub App #4821',
+    authKind: 'api_key',
+    accountLabel: 'AppHatchery · fine-grained token',
     grantedScopes: ['Metadata: read', 'Contents: read', 'Issues: read', 'Pull requests: read'],
     lastSync: iso(0, 7),
   }),
@@ -887,6 +888,7 @@ export const connections: Connection[] = [
   }),
   connection('typeu', 'notion', ['db:roadmap'], {
     status: 'error',
+    authKind: 'api_key',
     accountLabel: 'AppHatchery workspace · Brain integration',
     grantedScopes: ['read_content', 'read_user_information'],
     lastSync: iso(0, 4),

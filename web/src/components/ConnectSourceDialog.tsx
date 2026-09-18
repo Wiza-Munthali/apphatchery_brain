@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Check, Search, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { Check, HelpCircle, Search, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog'
 import { Banner } from '@astryxdesign/core/Banner'
 import { Button } from '@astryxdesign/core/Button'
@@ -17,6 +17,7 @@ import type { Connection, DiscoveredResource, SourceId, SyncCadence } from '../t
 import type { ProviderSpec } from '../data/providers'
 import { discoveredFor, beginConnect, verifyCredential, MOCK_MIN_KEY_LENGTH } from '../lib/mockConnect'
 import { useOrg } from '../context/OrgContext'
+import { SetupGuide } from './SetupGuide'
 
 type Step = 'review' | 'credentials' | 'handshake' | 'select' | 'cadence'
 
@@ -44,10 +45,13 @@ interface FlowProps {
  * The shape of this flow is the security design, not decoration:
  *
  *  1. Review    — scopes and caveats are shown BEFORE anything is handed over,
- *                 each with a plain-language reason, so consent is informed.
- *  2. Handshake — either a provider redirect, or (Zulip only, which has no
- *                 OAuth) a credential form. Credentials live in local state for
- *                 the life of this component and are never persisted or echoed.
+ *                 each with a plain-language reason, plus the provider's setup
+ *                 steps, so consent is informed and the work is done in order.
+ *  2. Handshake — either a provider redirect (Slack, Figma) or a credential
+ *                 form (GitHub, Notion and Zulip, which the backend
+ *                 authenticates with tokens rather than OAuth). Credentials
+ *                 live in local state for the life of this component and are
+ *                 never persisted or echoed back.
  *  3. Select    — default-deny. Nothing is pre-selected on a first connect, and
  *                 continuing with an empty selection is blocked. Resources the
  *                 credential cannot reach are listed but disabled, with the
@@ -90,6 +94,9 @@ export function ConnectSourceFlow({
   // never leave this component, are not persisted, and are dropped on unmount.
   const [credFields, setCredFields] = useState<Record<string, string>>({})
   const [replacingSecret, setReplacingSecret] = useState(!connection || Boolean(needsFreshCredential))
+  // Collapsed while things are going fine; opened automatically when a
+  // credential is rejected, since that is exactly when the steps are needed.
+  const [showGuide, setShowGuide] = useState(false)
 
   const hasStoredCredential = Boolean(connection) && !needsFreshCredential
 
@@ -131,6 +138,7 @@ export function ConnectSourceFlow({
       applyHandshake(await verifyCredential(provider.id, credFields))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Connection failed.')
+      setShowGuide(true)
     } finally {
       setBusy(false)
     }
@@ -224,6 +232,16 @@ export function ConnectSourceFlow({
         </VStack>
       )}
 
+      <SetupGuide provider={provider} title={`Before you connect ${provider.name}`} />
+
+      {!provider.syncAvailable && (
+        <Banner
+          status="info"
+          title="No sync for this source yet"
+          description={`You can configure the connection now, but nothing will be indexed from ${provider.name} until its sync ships.`}
+        />
+      )}
+
       {needsFreshCredential && (
         <Banner
           status="warning"
@@ -287,6 +305,17 @@ export function ConnectSourceFlow({
               />
             ))}
           </VStack>
+
+          <HStack gap={2} vAlign="center">
+            <Button
+              label={showGuide ? 'Hide setup steps' : `How do I get this from ${provider.name}?`}
+              size="sm"
+              variant="ghost"
+              icon={<Icon icon={HelpCircle} size="xsm" />}
+              onClick={() => setShowGuide((v) => !v)}
+            />
+          </HStack>
+          {showGuide && <SetupGuide provider={provider} title={`Set up ${provider.name}`} />}
 
           {provider.safetyNotes.map((note) => (
             <HStack key={note} gap={1.5} vAlign="start">

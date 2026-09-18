@@ -132,7 +132,7 @@ const DISCOVERED: Record<string, DiscoveredResource[]> = {
 }
 
 const ACCOUNT_LABELS: Record<string, string> = {
-  github: 'AppHatchery · GitHub App #4821',
+  github: 'AppHatchery · fine-grained token',
   notion: 'AppHatchery workspace · Brain integration',
   slack: 'AppHatchery · Brain bot',
   figma: 'AppHatchery · Brain (OAuth)',
@@ -157,12 +157,22 @@ export async function beginConnect(providerId: ProviderId): Promise<HandshakeRes
   }
 }
 
+/** How a verified connection identifies itself, per provider. */
+function accountLabelFor(providerId: ProviderId, fields: Record<string, string>): string {
+  if (providerId === 'zulip') return fields.botEmail?.trim() || 'Zulip bot'
+  return ACCOUNT_LABELS[providerId] ?? `${requireProvider(providerId).name} account`
+}
+
 /**
- * Simulates verifying a pasted bot credential (the `api_key` path — currently
- * Zulip only). Rejects with a `CredentialError` so the dialog can show an
- * inline field error rather than a crash.
+ * Simulates verifying pasted credentials (the `api_key` path — GitHub, Notion
+ * and Zulip). Rejects with a `CredentialError` so the dialog can show an
+ * inline error rather than a crash.
  *
- * The submitted `fields` are used and discarded here. They are never returned,
+ * Validation is driven by each provider's own `credentialFields`, so the
+ * expected token shapes stay described in one place (providers.ts) instead of
+ * being duplicated as conditionals here.
+ *
+ * The submitted `fields` are used and discarded. They are never returned,
  * stored, or logged — see the note in lib/orgStore.ts.
  */
 export async function verifyCredential(
@@ -172,24 +182,27 @@ export async function verifyCredential(
   const spec = requireProvider(providerId)
   await delay(900)
 
-  const realmUrl = (fields.realmUrl ?? '').trim()
-  const botEmail = (fields.botEmail ?? '').trim()
-  const apiKey = (fields.apiKey ?? '').trim()
+  for (const field of spec.credentialFields ?? []) {
+    const value = (fields[field.key] ?? '').trim()
 
-  if (!/^https?:\/\/.+/.test(realmUrl)) {
-    throw new CredentialError('That realm URL doesn’t look right — it should start with https://')
-  }
-  if (!botEmail.includes('@')) {
-    throw new CredentialError('Enter the bot’s full email address.')
-  }
-  if (apiKey.length < MOCK_MIN_KEY_LENGTH) {
-    throw new CredentialError(
-      `${spec.name} rejected these credentials (401). Check the realm URL and regenerate the bot’s API key.`,
-    )
+    if (!value) {
+      throw new CredentialError(`${field.label} is required.`)
+    }
+    if (field.type === 'email' && !value.includes('@')) {
+      throw new CredentialError(`${field.label} should be a full email address.`)
+    }
+    if (field.pattern && !new RegExp(field.pattern).test(value)) {
+      throw new CredentialError(field.patternHint ?? `${field.label} doesn’t look right.`)
+    }
+    if (field.isSecret && value.length < MOCK_MIN_KEY_LENGTH) {
+      throw new CredentialError(
+        `${spec.name} rejected these credentials (401). Check the value and regenerate it if needed.`,
+      )
+    }
   }
 
   return {
-    accountLabel: botEmail,
+    accountLabel: accountLabelFor(providerId, fields),
     grantedScopes: spec.scopes.map((s) => s.scope),
     discovered: discoveredFor(providerId),
   }
