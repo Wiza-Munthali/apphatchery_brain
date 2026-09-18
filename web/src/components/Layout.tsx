@@ -139,7 +139,7 @@ export function Layout() {
                   className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition hover:bg-slate-100 dark:hover:bg-neutral-800"
                 >
                   <div className="min-w-0 flex-1">
-                    <Text type="body" size="xsm" color="secondary" maxLines={1}>
+                    <Text type="body" size="base" color="secondary" maxLines={1}>
                       {org.name}
                     </Text>
                   </div>
